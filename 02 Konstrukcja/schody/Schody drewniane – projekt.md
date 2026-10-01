@@ -25,6 +25,14 @@ Wariant stalowy dla porównania: `schody.html` · Rysunki architektki: [[EKR sch
 | Nisza dla psa | 100 × 120 cm pod biegiem, wejście od pokoju |
 | Warunek | **schody nie mogą być mocowane ani podwieszane do ściany zewnętrznej** |
 
+## Ustalenia z projektu budynku (K-02, K-03, K-10, IS-02.5, TOM 1)
+
+- **Ściana przy schodach to ściana między segmentami bliźniaka, nie zewnętrzna.** Podwójna, z dylatacją, REI 60, R'A1 ≥ 52 dB (TOM 1, osie B.1 | B.1 na K-03). Dlatego nic nie może być do niej kotwione: każde mocowanie przenosiłoby kroki do sąsiada. W modelu nazywa się ona nadal „ścianą zewnętrzną”, jak u architektki.
+- **Strop pod schodami:** 3.1, żelbet gr. 18 cm, C25/30 (K-02, K-10). Zbrojenie jest standardowe: dołem Ø12 co 20–25, górą Ø12 co 25 przy podporach. **Nie ma dozbrojenia pod schody.** Wzdłuż ściany przy schodach strop opiera się jednak na **żelbetowej ścianie 3.12 gr. 18 cm** w lokalu poniżej. Cały bieg (0–1 m od ściany) leży więc tuż przy podporze, czyli w najkorzystniejszym miejscu stropu.
+- **Deweloper przewidział tu „samonośne / systemowe schody stalowe”** (TOM 1, K-03, IS-02.5). Na K-03 jest uwaga: *„w ścianie wykonać wzmocnienie pod schody zgodnie z zaleceniem Producenta”*. Warto zapytać dewelopera, czy i co wykonano.
+- **Ogrzewanie podłogowe nie omija schodów.** Pętla „A” (rozstaw 15 cm) biegnie pod całym obrysem biegu, do ok. 10 cm od ściany (IS-02.5). Potwierdza to, że w wylewkę nie wolno kotwić. Pod schodami ogrzewanie będzie grzało zamkniętą przestrzeń. Jeśli wylewka nie jest jeszcze wylana, można poprosić instalatora o ominięcie obrysu schodów.
+- **Opracowanie KLO** (wypełnienie otworu 240 × 319) dotyczy otworu w środku pomieszczenia, a nie strefy schodów. Ze schodami ma wspólny tylko detal (wieszaki + kotwy w krawędź stropu), który jest wzorem dla listwy L1.
+
 ## Idea konstrukcji
 
 Przestrzeń pod biegiem jest **zamknięta** z trzech stron: ścianą zewnętrzną, ścianą g-k i samymi schodami. Dzięki temu konstrukcja nie musi „lewitować”. Wszystko można podeprzeć od dołu słupami i ściankami schowanymi w zabudowie. Dlatego zamiast smukłej stali wystarczy zwykła ciesielka.
@@ -137,11 +145,12 @@ Największe oszczędności dają podstopnice z MDF lakierowanego zamiast dębu, 
 
 Najlepiej zadać je autorowi konstrukcji budynku (mgr inż. Łukasz Sekuła, ma rysunki K-xx):
 
-1. Czy **strop pod biegiem** (nad lokalem poniżej) przeniesie ok. 1 t ciężaru własnego i obciążenie użytkowe schodów, przekazywane przez płytę OSB 2×22 mm na posadzkę pływającą (anhydryt 60 mm na styropianie akustycznym)? Gdzie pod spodem są ściany lub belki, na które warto trafić słupami?
+1. Czy **strop 3.1** (gr. 18 cm, bez dozbrojenia pod schody, oparty na ścianie 3.12 tuż pod biegiem) przeniesie ok. 1 t ciężaru własnego i obciążenie użytkowe schodów, przekazywane przez płytę OSB 2×22 mm na posadzkę pływającą (anhydryt 60 mm na styropianie akustycznym)? Wydaje się, że bieg leży w strefie podporowej przy ścianie 3.12. Czy to wystarcza?
 2. **L1:** typ, średnica, rozstaw i głębokość kotew w czole stropu antresoli, minimalna odległość od krawędzi. W opracowaniu KLO dla wypełnienia otworu zastosowano np. Fischer FAZ II.
 3. Oczep ściany wewnętrznej do spodu stropu: czy można kotwić i czym?
 4. Czy przyjęte przekroje (BSH 8×28, KVH 10×10, 6×16) są OK, czy coś zmienić?
 5. Czy akceptuje posadowienie schodów na płycie OSB leżącej luzem na wylewce anhydrytowej, bez kotwienia w wylewkę?
+6. Pytanie do dewelopera: co wykonano jako „wzmocnienie w ścianie pod schody” z K-03?
 
 ## Otwarte kwestie
 
@@ -149,4 +158,5 @@ Najlepiej zadać je autorowi konstrukcji budynku (mgr inż. Łukasz Sekuła, ma 
 - [ ] Pomiar rzeczywistej krawędzi stropu antresoli względem linii g-k (w modelu przyjęto x = 95 cm) #konstrukcja
 - [ ] Wysokość w krytycznym miejscu nad stopniami 11–12 (182 / 164 cm z przekroju EKR) a zabudowa antresoli #konstrukcja
 - [ ] Gwarancja dewelopera: czy kotwienie w strop jej nie narusza? #formalności
-- [ ] Sprawdzić na K-03 / K-18…K-22, co jest pod biegiem w lokalu poniżej #konstrukcja
+- [x] Sprawdzić na rysunkach K, co jest pod biegiem: strop 3.1 gr. 18 na ścianie żelbetowej 3.12, bez dozbrojenia #konstrukcja
+- [ ] Zapytać dewelopera o „wzmocnienie w ścianie pod schody” (K-03) i o to, czy wylewka jest już wylana #formalności

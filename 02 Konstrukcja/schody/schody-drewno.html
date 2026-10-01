@@ -343,11 +343,10 @@ const LAYERS = [
   ['rail',      'pochwyt wpuszczany + LED', 0xffe9a8, true],
   ['niche',     'legowisko dla psa', 0x1971c2, true],
   ['dims',      'wymiary', 0xd9480f, true],
-  ['stepno',    'numery stopni', 0x1d2126, true],
+  ['stepno',    'numery stopni', 0x1d2126, false],
   ['parts',     'opisy elementów', 0x1d2126, false],
 ];
 const layerState = Object.fromEntries(LAYERS.map(l => [l[0], l[3]]));
-if (matchMedia('(max-width: 760px)').matches) layerState.dims = false;   // na telefonie wymiary zasłaniają model
 let root = null, groups = {};
 const grp = name => groups[name] || (groups[name] = Object.assign(new THREE.Group(), { name }), root.add(groups[name]), groups[name]);
 
