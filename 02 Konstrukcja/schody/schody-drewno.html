@@ -1,0 +1,938 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Schody EKR – drewno</title>
+<style>
+  :root {
+    --bg: #eef0f2; --panel: #ffffff; --ink: #1d2126; --muted: #69707a; --line: #dde1e6;
+    --accent: #d9480f;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; font: 13px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color: var(--ink); background: var(--bg); }
+  #app { position: fixed; inset: 0 0 0 340px; }
+  #labels { position: fixed; inset: 0 0 0 340px; pointer-events: none; }
+  aside { position: fixed; top: 0; left: 0; bottom: 0; width: 340px; overflow-y: auto; background: var(--panel); border-right: 1px solid var(--line); padding: 16px 18px 40px; }
+  h1 { font-size: 16px; margin: 0 0 4px; }
+  h2 { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 18px 0 8px; font-weight: 600; }
+  .sub { color: var(--muted); margin: 0 0 6px; }
+  .views { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+  button { font: inherit; padding: 6px 4px; border: 1px solid var(--line); background: #f7f8f9; border-radius: 6px; cursor: pointer; }
+  button:hover { background: #eceff2; }
+  label.chk { display: flex; align-items: center; gap: 8px; padding: 2px 0; cursor: pointer; }
+  .sw { width: 12px; height: 12px; border-radius: 3px; border: 1px solid rgba(0,0,0,.2); flex: none; }
+  .row { display: grid; grid-template-columns: 1fr 64px; align-items: center; gap: 8px; margin: 4px 0; }
+  .row input[type=range] { width: 100%; }
+  .row output { text-align: right; font-variant-numeric: tabular-nums; }
+  select { width: 100%; font: inherit; padding: 4px; }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  td { padding: 3px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+  td:last-child { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; padding-left: 8px; }
+  ul { padding-left: 16px; margin: 4px 0; }
+  li { margin: 3px 0; }
+  .warn { color: #b3261e; }
+  .ok { color: #2b8a3e; }
+  .hint { color: var(--muted); font-size: 12px; }
+  .dim { font: 600 11px/1 -apple-system, sans-serif; color: #d9480f; background: rgba(255,255,255,.85); padding: 1px 3px; border-radius: 3px; white-space: nowrap; }
+  .dim.red { color: #c92a2a; }
+  .stepno { font: 700 11px/1 -apple-system, sans-serif; color: #1d2126; background: rgba(255,255,255,.75); padding: 1px 4px; border-radius: 8px; }
+  .part { font: 500 11px/1.2 -apple-system, sans-serif; color: #fff; background: rgba(29,33,38,.82); padding: 2px 5px; border-radius: 3px; white-space: nowrap; }
+  .primary { width: 100%; padding: 9px 8px; background: #1d2126; color: #fff; border-color: #1d2126; font-weight: 600; }
+  .primary:hover { background: #343a42; }
+  #sheet { position: fixed; inset: 0; z-index: 20; overflow-y: auto; background: #fff; padding: 24px clamp(16px, 4vw, 48px) 60px; }
+  #sheet .bar { display: flex; gap: 8px; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; margin-bottom: 8px; }
+  #sheet .actions { display: flex; gap: 8px; }
+  #sheet h1 { font-size: 20px; }
+  #sheet h2 { font-size: 12px; margin-top: 26px; }
+  #sheet .meta { color: var(--muted); max-width: 900px; }
+  .treads { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 14px; }
+  .tread { border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; break-inside: avoid; }
+  .tread h3 { margin: 0 0 2px; font-size: 14px; }
+  .tread .qty { float: right; font-weight: 700; color: var(--accent); }
+  .tread .info { color: var(--muted); font-size: 12px; margin-bottom: 4px; }
+  .tread svg { width: 100%; height: auto; display: block; }
+  .tread svg text { font: 3.4px -apple-system, sans-serif; fill: #1d2126; }
+  .tread svg text.ang { fill: #1971c2; font-size: 3px; }
+  .tread svg text.tag { fill: #69707a; font-size: 2.8px; font-style: italic; }
+  .tbl-wrap { overflow-x: auto; }
+  #sheet table { max-width: 900px; font-size: 13px; }
+  #sheet th { text-align: left; font-weight: 600; padding: 4px 8px 4px 0; border-bottom: 2px solid var(--ink); white-space: nowrap; }
+  #sheet td { padding: 4px 8px 4px 0; }
+  #sheet td:last-child { text-align: left; }
+  #sheet td.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  @media print {
+    body > *:not(#sheet) { display: none !important; }
+    #sheet { position: static; overflow: visible; padding: 0; }
+    #sheet .actions { display: none; }
+    .treads { grid-template-columns: repeat(3, 1fr); }
+  }
+  @media (max-width: 760px) {
+    aside { position: static; width: auto; height: auto; border-right: 0; border-bottom: 1px solid var(--line); }
+    #app, #labels { position: relative; inset: auto; height: 70vh; }
+    #labels { position: absolute; top: 0; left: 0; right: 0; }
+    body { overflow: auto; }
+  }
+</style>
+<script type="importmap">
+{ "imports": {
+  "three": "https://unpkg.com/three@0.164.1/build/three.module.js",
+  "three/addons/": "https://unpkg.com/three@0.164.1/examples/jsm/"
+} }
+</script>
+</head>
+<body>
+<aside>
+  <h1>Schody EKR — wariant drewniany</h1>
+  <p class="sub">Koncepcja do samodzielnego wykonania. Szkielet z drewna KVH/BSH jest schowany w zabudowie i nie dotyka ściany zewnętrznej. Stopnie 1–8 stoją na ściankach szkieletowych ze sklejką, 9–18 na dwóch policzkach zębatych BSH, a zabiegowe 19–21 na legarach KVH, które piętrzą się jeden na drugim (legar 16 cm + sklejka 22 mm = jedno podniesienie). Geometria wg rys. „EKR schody” i „EKR schody przekrój” (A. Krzak). Jednostki: cm.</p>
+  <p class="hint">LPM – obrót · PPM – przesuw · kółko – zoom</p>
+
+  <h2>Widok</h2>
+  <div class="views">
+    <button data-view="iso">3D</button>
+    <button data-view="plan">Rzut</button>
+    <button data-view="section">Przekrój</button>
+    <button data-view="under">Pod biegiem</button>
+  </div>
+
+  <h2>Warstwy</h2>
+  <div id="layers"></div>
+
+  <h2>Cięcie modelu (płaszczyzna X)</h2>
+  <div class="row"><input type="range" id="cut" min="-40" max="240" step="1" value="240"><output id="cutOut">wył.</output></div>
+  <p class="hint">X = 0 to lico ściany zewnętrznej, X = 90 to lico zabudowy g-k od strony biegu. Np. X≈5 pokazuje policzek zewnętrzny, a X≈45 przekrój przez środek biegu.</p>
+
+  <h2>Parametry</h2>
+  <div id="params"></div>
+
+  <h2>Zestawienie (szacunkowe)</h2>
+  <div id="stats"></div>
+  <p style="margin-top:10px"><button class="primary" id="openSheet">Lista elementów i stopnic – do zakupu i cięcia</button></p>
+
+  <h2>Uwagi do konstruktora</h2>
+  <ul id="notes"></ul>
+</aside>
+<div id="app"></div>
+<div id="labels"></div>
+<section id="sheet" hidden>
+  <div class="bar">
+    <div>
+      <h1>Schody EKR (drewno) – lista elementów</h1>
+      <p class="meta" id="sheetMeta"></p>
+    </div>
+    <div class="actions"><button id="printSheet">Drukuj / PDF</button><button id="closeSheet">Zamknij ✕</button></div>
+  </div>
+  <h2>Drewno konstrukcyjne – zestawienie wg przekroju</h2>
+  <div class="tbl-wrap"><table id="sheetTimber"></table></div>
+  <h2>Elementy belkowe i słupy – lista cięć</h2>
+  <div class="tbl-wrap"><table id="sheetPieces"></table></div>
+  <h2>Ścianki szkieletowe pod stopniami 1–9 (kantówka 45×45 + sklejka 18 mm obustronnie)</h2>
+  <div class="tbl-wrap"><table id="sheetWalls"></table></div>
+  <h2>Sklejka 22 mm pod stopnicami (stopnie 1–8 i 19–21)</h2>
+  <div class="tbl-wrap"><table id="sheetPly"></table></div>
+  <h2>Stopnice dębowe – kształty netto (widok z góry)</h2>
+  <div class="treads" id="sheetTreads"></div>
+  <h2>Podstopnice</h2>
+  <div class="tbl-wrap"><table id="sheetRisers"></table></div>
+  <h2>Łączniki i akcesoria (orientacyjnie)</h2>
+  <div class="tbl-wrap"><table id="sheetHw"></table></div>
+</section>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
+
+// ─────────────────────────────────────────────────────────────
+// Dane z rysunków
+// ─────────────────────────────────────────────────────────────
+const HTOT = 382;            // różnica poziomów ±0,00 → +3,82
+const NRISE = 21;            // liczba podniesień
+const H = HTOT / NRISE;      // ≈ 18,19
+const G = 24;                // głębokość konstrukcyjna stopnia
+const SLAB_BOT = 362, SLAB_TOP = 382, CEIL = 382 + 269;
+const GK_X0 = 90;                                     // lico zabudowy g-k od strony biegu (jak w EKR)
+const GK_MID = GK_X0 + 1.25;                          // zasięg stopni prostych w danych (do lica słupków)
+const SLAB_X0 = 95;                                   // krawędź stropu antresoli – orientacyjnie, do pomiaru
+const NICHE = { y0: 121, y1: 221, h: 120 };           // legowisko: 100 × 120 (199 / 100 / 31 od przekroju)
+
+// tt stopnica, nos nosek, ply sklejka pod stopnicą, rb podstopnica, gap odsunięcie od ściany zewn.,
+// D wysokość policzka BSH (szer. 8), gk płyta g-k, stud głębokość słupków ściany wewn.
+const P = { tt: 4, nos: 2.5, ply: 2.2, rb: 2, gap: 1.5, D: 28, gk: 1.25, stud: 10 };
+const PARAMS = [
+  ['tt',  'grubość stopnicy dębowej', 3, 5, 0.5],
+  ['nos', 'wysunięcie stopnicy (nosek)', 0, 4, 0.5],
+  ['D',   'wysokość policzka BSH 8 × D', 24, 32, 2],
+  ['gap', 'odsunięcie od ściany zewn.', 0.5, 5, 0.5],
+];
+
+// Stopnie w rzucie (x: od lica ściany zewn., y: od początku zabiegu dolnego – wg rzutu)
+function stepsData() {
+  const S = [];
+  for (let k = 1; k <= 5; k++) {
+    const xa = 210 - 24 * k, xb = xa + 24;
+    S.push({ n: k, type: 'm', poly: [[xa, 0], [xb, 0], [xb, 90], [xa, 90]], front: [[xb, 0], [xb, 90]] });
+  }
+  S.push({ n: 6, type: 'm', poly: [[90, 0], [90, 90], [34.5, 0]], front: [[90, 0], [90, 90]] });
+  S.push({ n: 7, type: 'm', poly: [[0, 0], [34.5, 0], [90, 90], [0, 40]], front: [[34.5, 0], [90, 90]] });
+  S.push({ n: 8, type: 'm', poly: [[0, 40], [90, 90], [0, 90]], front: [[0, 40], [90, 90]] });
+  for (let k = 9; k <= 18; k++) {
+    const ya = 90 + 24 * (k - 9), yb = ya + 24;
+    S.push({ n: k, type: 's', rect: true, poly: [[0, ya], [GK_MID, ya], [GK_MID, yb], [0, yb]], front: [[0, ya], [GK_MID, ya]], ya, yb });
+  }
+  S.push({ n: 19, type: 's', poly: [[0, 330], [90, 330], [0, 380]], front: [[0, 330], [90, 330]] });
+  S.push({ n: 20, type: 's', poly: [[0, 380], [90, 330], [34.5, 420], [0, 420]], front: [[0, 380], [90, 330]] });
+  S.push({ n: 21, type: 's', landing: true, poly: [[90, 330], [90, 420], [34.5, 420]], front: [[90, 330], [34.5, 420]] });
+  return S;
+}
+
+// ─────────────────────────────────────────────────────────────
+// Geometria 2D
+// ─────────────────────────────────────────────────────────────
+const V = (x, y, z) => new THREE.Vector3(x, z, y);   // rzut (x,y) + wysokość z → three
+const fmt = v => (Math.round(v * 10) / 10).toString().replace('.', ',');
+
+function clipHalf(poly, f) {
+  const out = [];
+  for (let i = 0; i < poly.length; i++) {
+    const a = poly[i], b = poly[(i + 1) % poly.length], fa = f(a), fb = f(b);
+    if (fa >= 0) out.push(a);
+    if ((fa >= 0) !== (fb >= 0)) { const t = fa / (fa - fb); out.push([a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t]); }
+  }
+  return out.filter((p, i, arr) => { const q = arr[(i + 1) % arr.length]; return Math.hypot(p[0] - q[0], p[1] - q[1]) > 1e-6; });
+}
+function boxFns(b) {
+  const f = [];
+  if (b.x0 != null) f.push(q => q[0] - b.x0);
+  if (b.x1 != null) f.push(q => b.x1 - q[0]);
+  if (b.y0 != null) f.push(q => q[1] - b.y0);
+  if (b.y1 != null) f.push(q => b.y1 - q[1]);
+  return f;
+}
+const clipBox = (poly, b) => boxFns(b).reduce((p, f) => clipHalf(p, f), poly);
+function clipSeg(a, b, box) {
+  let t0 = 0, t1 = 1;
+  for (const f of boxFns(box)) {
+    const fa = f(a), fb = f(b);
+    if (fa < 0 && fb < 0) return null;
+    if (fa < 0) t0 = Math.max(t0, fa / (fa - fb));
+    if (fb < 0) t1 = Math.min(t1, fa / (fa - fb));
+  }
+  const L = t => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t];
+  return t1 > t0 ? [L(t0), L(t1)] : null;
+}
+const area = poly => Math.abs(poly.reduce((s, p, i) => { const q = poly[(i + 1) % poly.length]; return s + p[0] * q[1] - q[0] * p[1]; }, 0)) / 2;
+const centroid = poly => poly.reduce((c, p) => [c[0] + p[0] / poly.length, c[1] + p[1] / poly.length], [0, 0]);
+function strip(a, b, w, ref) {   // pas o szerokości w wzdłuż odcinka a-b, w stronę punktu ref
+  const dx = b[0] - a[0], dy = b[1] - a[1], L = Math.hypot(dx, dy);
+  let n = [-dy / L, dx / L];
+  if ((ref[0] - a[0]) * n[0] + (ref[1] - a[1]) * n[1] < 0) n = [-n[0], -n[1]];
+  return [a, b, [b[0] + n[0] * w, b[1] + n[1] * w], [a[0] + n[0] * w, a[1] + n[1] * w]];
+}
+function frontNormal(poly, [a, b]) {   // normalna krawędzi czołowej skierowana na zewnątrz stopnia
+  const c = centroid(poly), dx = b[0] - a[0], dy = b[1] - a[1], L = Math.hypot(dx, dy);
+  const n = [-dy / L, dx / L];
+  return (c[0] - a[0]) * n[0] + (c[1] - a[1]) * n[1] > 0 ? [-n[0], -n[1]] : n;
+}
+function lineX(p1, p2, p3, p4) {        // przecięcie prostych p1p2 i p3p4 (null gdy równoległe)
+  const d = (p1[0] - p2[0]) * (p3[1] - p4[1]) - (p1[1] - p2[1]) * (p3[0] - p4[0]);
+  if (Math.abs(d) < 1e-9) return null;
+  const a = p1[0] * p2[1] - p1[1] * p2[0], b = p3[0] * p4[1] - p3[1] * p4[0];
+  return [(a * (p3[0] - p4[0]) - (p1[0] - p2[0]) * b) / d, (a * (p3[1] - p4[1]) - (p1[1] - p2[1]) * b) / d];
+}
+// przesunięcie krawędzi czołowej na zewnątrz (nosek); sąsiednie krawędzie wydłużane po swoich prostych
+function offsetFront(poly, front, d) {
+  const n = frontNormal(poly, front), N = poly.length;
+  const same = (p, q) => Math.hypot(p[0] - q[0], p[1] - q[1]) < 1e-6;
+  const i = poly.findIndex((p, k) => { const q = poly[(k + 1) % N]; return (same(p, front[0]) && same(q, front[1])) || (same(p, front[1]) && same(q, front[0])); });
+  const a = poly[i], b = poly[(i + 1) % N], prev = poly[(i - 1 + N) % N], next = poly[(i + 2) % N];
+  const a1 = [a[0] + n[0] * d, a[1] + n[1] * d], b1 = [b[0] + n[0] * d, b[1] + n[1] * d];
+  const out = poly.slice();
+  out[i] = lineX(a1, b1, prev, a) || a1;
+  out[(i + 1) % N] = lineX(a1, b1, b, next) || b1;
+  return out;
+}
+const lineDist = (p, a, b) => Math.abs((b[0] - a[0]) * (a[1] - p[1]) - (a[0] - p[0]) * (b[1] - a[1])) / Math.hypot(b[0] - a[0], b[1] - a[1]);
+
+// ─────────────────────────────────────────────────────────────
+// Scena
+// ─────────────────────────────────────────────────────────────
+const app = document.getElementById('app');
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.localClippingEnabled = true;
+app.appendChild(renderer.domElement);
+const labelRenderer = new CSS2DRenderer({ element: document.getElementById('labels') });
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0xeef0f2);
+const camera = new THREE.PerspectiveCamera(40, 1, 5, 20000);
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+
+scene.add(new THREE.HemisphereLight(0xffffff, 0xb9b3a8, 1.6));
+const sun = new THREE.DirectionalLight(0xffffff, 1.8);
+sun.position.copy(V(450, -250, 800));
+sun.target.position.copy(V(80, 210, 150));
+sun.castShadow = true;
+sun.shadow.mapSize.set(2048, 2048);
+Object.assign(sun.shadow.camera, { left: -450, right: 450, top: 450, bottom: -450, near: 10, far: 2500 });
+sun.shadow.bias = -0.0005;
+scene.add(sun, sun.target);
+
+const floor = new THREE.Mesh(new THREE.PlaneGeometry(900, 900), new THREE.MeshStandardMaterial({ color: 0xe4e1da, roughness: 1 }));
+floor.rotation.x = -Math.PI / 2; floor.position.copy(V(150, 200, -0.05)); floor.receiveShadow = true;
+scene.add(floor);
+const grid = new THREE.GridHelper(900, 90, 0xc9c5bc, 0xd8d4cc);
+grid.position.copy(V(150, 200, 0)); scene.add(grid);
+
+const clipPlane = new THREE.Plane(new THREE.Vector3(-1, 0, 0), 1e5);
+const mat = (color, o = {}) => new THREE.MeshStandardMaterial({ color, roughness: 0.8, metalness: 0, clippingPlanes: [clipPlane], side: THREE.DoubleSide, ...o });
+const M = {
+  frame:   mat(0xe3cfa4, { roughness: 0.9 }),
+  ply:     mat(0xd8c48c, { roughness: 0.85 }),
+  oak:     mat(0xa8713a, { roughness: 0.55 }),
+  riser:   mat(0x8c5a2c, { roughness: 0.6 }),
+  bsh:     mat(0xc28a4c, { roughness: 0.7 }),
+  kvh:     mat(0xd2a466, { roughness: 0.75 }),
+  post:    mat(0xb06f35, { roughness: 0.7 }),
+  rygiel:  mat(0x9a7a52, { roughness: 0.8 }),
+  stud:    mat(0xe8d6ae, { roughness: 0.9 }),
+  anchor:  mat(0xb5532f, { metalness: 0.2, roughness: 0.55 }),
+  gk:      mat(0xf4f6fa, { transparent: true, opacity: 0.28, depthWrite: false }),
+  gkWall:  mat(0x7bc47f, { transparent: true, opacity: 0.25, depthWrite: false }),
+  fronts:  mat(0x3d8fe0, { transparent: true, opacity: 0.35, depthWrite: false }),
+  wall:    mat(0xcfc9bd, { transparent: true, opacity: 0.3, depthWrite: false }),
+  slab:    mat(0x9aa7b8, { transparent: true, opacity: 0.35, depthWrite: false }),
+  rail:    mat(0xf5f0e0, { emissive: 0xffe9a8, emissiveIntensity: 0.9 }),
+};
+const EDGE = new THREE.LineBasicMaterial({ color: 0x1d2126, transparent: true, opacity: 0.35, clippingPlanes: [clipPlane] });
+const EDGE_LIGHT = new THREE.LineBasicMaterial({ color: 0x5a6470, transparent: true, opacity: 0.25, clippingPlanes: [clipPlane] });
+const DIM = new THREE.LineBasicMaterial({ color: 0xd9480f, depthTest: false, transparent: true });
+const DIM_RED = new THREE.LineBasicMaterial({ color: 0xc92a2a, depthTest: false, transparent: true });
+const NICHE_LINE = new THREE.LineDashedMaterial({ color: 0x1971c2, dashSize: 4, gapSize: 3, clippingPlanes: [clipPlane] });
+
+// ─────────────────────────────────────────────────────────────
+// Warstwy
+// ─────────────────────────────────────────────────────────────
+const LAYERS = [
+  ['frame',     'stopnie 1–9: ścianki szkieletowe', 0xe3cfa4, true],
+  ['ply',       'sklejka 22 mm pod stopnicami', 0xd8c48c, true],
+  ['fronts',    'fronty meblowe stopni 1–8 (opcja)', 0x3d8fe0, false],
+  ['treads',    'stopnice dębowe', 0xa8713a, true],
+  ['risers',    'podstopnice', 0x8c5a2c, true],
+  ['stringers', 'policzki zębate BSH 8×D', 0xc28a4c, true],
+  ['posts',     'słupy 10×10', 0xb06f35, true],
+  ['beams',     'legary / belki zabiegowe KVH', 0xd2a466, true],
+  ['ledger',    'listwa L1 kotwiona do czoła stropu', 0xb5532f, true],
+  ['rygle',     'rygle stężające 6×10', 0x9a7a52, true],
+  ['wall',      'ściana wewn. – szkielet KVH 6×10', 0xe8d6ae, true],
+  ['gk',        'płyty g-k + ścianka na antresoli', 0xdfe4ec, true],
+  ['slab',      'strop antresoli (orientacyjnie)', 0x9aa7b8, true],
+  ['walls',     'ściany zewnętrzne', 0xcfc9bd, true],
+  ['rail',      'pochwyt wpuszczany + LED', 0xffe9a8, true],
+  ['niche',     'legowisko dla psa', 0x1971c2, true],
+  ['dims',      'wymiary', 0xd9480f, true],
+  ['stepno',    'numery stopni', 0x1d2126, true],
+  ['parts',     'opisy elementów', 0x1d2126, false],
+];
+const layerState = Object.fromEntries(LAYERS.map(l => [l[0], l[3]]));
+let root = null, groups = {};
+const grp = name => groups[name] || (groups[name] = Object.assign(new THREE.Group(), { name }), root.add(groups[name]), groups[name]);
+
+function addMesh(g, geo, material, edgeMat) {
+  const m = new THREE.Mesh(geo, material);
+  m.castShadow = !material.transparent; m.receiveShadow = !material.transparent;
+  g.add(m);
+  if (edgeMat !== null) g.add(new THREE.LineSegments(new THREE.EdgesGeometry(geo, 25), edgeMat || (material.transparent ? EDGE_LIGHT : EDGE)));
+  return m;
+}
+// pryzmat: wielokąt w rzucie, wysokość z0..z1
+function prism(g, poly, z0, z1, material, edgeMat) {
+  if (!poly || poly.length < 3 || z1 - z0 < 0.01) return 0;
+  const geo = new THREE.ExtrudeGeometry(new THREE.Shape(poly.map(p => new THREE.Vector2(p[0], p[1]))), { depth: z1 - z0, bevelEnabled: false });
+  geo.rotateX(Math.PI / 2); geo.translate(0, z1, 0);
+  addMesh(g, geo, material, edgeMat);
+  return area(poly) * (z1 - z0);
+}
+// pryzmat: wielokąt w przekroju (y, z), grubość x0..x1
+function prismYZ(g, poly, x0, x1, material) {
+  const geo = new THREE.ExtrudeGeometry(new THREE.Shape(poly.map(p => new THREE.Vector2(p[0], p[1]))), { depth: x1 - x0, bevelEnabled: false });
+  geo.rotateY(-Math.PI / 2); geo.translate(x1, 0, 0);
+  addMesh(g, geo, material);
+  return area(poly) * (x1 - x0);
+}
+const box = (g, x0, x1, y0, y1, z0, z1, material, edgeMat) => prism(g, [[x0, y0], [x1, y0], [x1, y1], [x0, y1]], z0, z1, material, edgeMat);
+
+function label(g, pos, text, cls) {
+  const el = document.createElement('div'); el.className = cls; el.textContent = text;
+  const o = new CSS2DObject(el); o.position.copy(pos); g.add(o); return o;
+}
+function line(g, pts, material) {
+  const l = new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), material);
+  l.renderOrder = 10; g.add(l); return l;
+}
+// wymiar: a, b = [x, y, z] w układzie rzutu; tick = kierunek kreski
+function dim(a, b, text, tick = [0, 0, 3], red = false, lblOffset = [0, 0, 0]) {
+  const g = grp('dims'), m = red ? DIM_RED : DIM;
+  const pa = V(...a), pb = V(...b), t = V(...tick);
+  line(g, [pa, pb], m);
+  for (const p of [pa, pb]) line(g, [p.clone().sub(t), p.clone().add(t)], m);
+  const mid = pa.clone().add(pb).multiplyScalar(0.5).add(V(...lblOffset));
+  label(g, mid, text, red ? 'dim red' : 'dim');
+}
+function chain(marks, toPt, tick, labels) {
+  for (let i = 0; i < marks.length - 1; i++)
+    dim(toPt(marks[i]), toPt(marks[i + 1]), labels ? labels[i] : fmt(marks[i + 1] - marks[i]), tick);
+}
+
+
+// ─────────────────────────────────────────────────────────────
+// Budowa modelu
+// ─────────────────────────────────────────────────────────────
+const top = n => (n === 21 ? HTOT : n * H);          // wierzch stopnicy
+const bT = n => (n <= 0 ? 0 : top(n) - P.tt);        // spód stopnicy
+const segLen = ([a, b]) => Math.hypot(b[0] - a[0], b[1] - a[1]);
+const onLine = (p, q, seg) => lineDist(p, ...seg) < 0.05 && lineDist(q, ...seg) < 0.05;
+function shiftSeg([a, b], d, ref) {     // przesunięcie odcinka o d w stronę punktu ref
+  const dx = b[0] - a[0], dy = b[1] - a[1], L = Math.hypot(dx, dy);
+  let n = [-dy / L, dx / L];
+  if ((ref[0] - a[0]) * n[0] + (ref[1] - a[1]) * n[1] < 0) n = [-n[0], -n[1]];
+  return [[a[0] + n[0] * d, a[1] + n[1] * d], [b[0] + n[0] * d, b[1] + n[1] * d]];
+}
+function clipToPoly(sub, poly) {        // przycięcie do wielokąta wypukłego
+  const c = centroid(poly);
+  return poly.reduce((acc, p, i) => {
+    const q = poly[(i + 1) % poly.length];
+    const cr = r => (q[0] - p[0]) * (r[1] - p[1]) - (q[1] - p[1]) * (r[0] - p[0]);
+    const s = Math.sign(cr(c));
+    return acc.length < 3 ? acc : clipHalf(acc, r => s * cr(r));
+  }, sub);
+}
+function spanAlong(poly, [a, b]) {      // długość elementu mierzona wzdłuż odcinka a-b
+  const dx = b[0] - a[0], dy = b[1] - a[1], L = Math.hypot(dx, dy);
+  const t = poly.map(p => ((p[0] - a[0]) * dx + (p[1] - a[1]) * dy) / L);
+  return Math.max(...t) - Math.min(...t);
+}
+
+let stats;
+function build() {
+  if (root) {
+    root.traverse(o => { if (o.isCSS2DObject) o.element.remove(); if (o.geometry) o.geometry.dispose(); });
+    scene.remove(root);
+  }
+  root = new THREE.Group(); groups = {}; scene.add(root);
+  stats = { pieces: [], walls: [], ply: [], treads: [], risers: [], gk: 0 };
+  const steps = stepsData();
+  const st = n => steps.find(s => s.n === n);
+  st(21).poly = [[90, 330], [SLAB_X0, 330], [SLAB_X0, 420], [34.5, 420]];   // wejście dociągnięte do krawędzi stropu
+
+  // — Układ w osi X ———————————————————————————————————————————
+  const ST0 = GK_X0 + P.gk, ST1 = ST0 + P.stud, RM1 = ST1 + 2 * P.gk;   // ściana wewn.: g-k | słupki | 2 × g-k
+  const OS0 = P.gap, OS1 = OS0 + 8;                // policzek zewnętrzny
+  const IS0 = ST0 - 8, IS1 = ST0;                  // policzek wewnętrzny (przy słupkach ściany)
+  const PO0 = P.gap, PO1 = PO0 + 10;               // słupy zewnętrzne 10×10
+  const PJ0 = ST0 - 10, PJ1 = ST0;                 // słupy wewnętrzne 10×10 (po stronie biegu)
+  const SEC = Math.hypot(1, H / G), NOTCH = H * G / Math.hypot(H, G);
+  const piece = (name, sec, len, note = '') => stats.pieces.push({ name, sec, len, note });
+  function beam(g, name, sec, seg, w, ref, z0, z1, material, clip, note) {
+    let poly = strip(seg[0], seg[1], w, ref);
+    if (clip) poly = clipBox(poly, clip);
+    if (poly.length < 3) return;
+    prism(g, poly, z0, z1, material);
+    piece(name, sec, spanAlong(poly, seg), note);
+  }
+  function bx(g, name, sec, x0, x1, y0, y1, z0, z1, material, len, note) {
+    box(g, x0, x1, y0, y1, z0, z1, material);
+    if (name) piece(name, sec, len ?? Math.max(x1 - x0, y1 - y0), note);
+  }
+
+  // — Stopnie 1–8: ścianki szkieletowe pod krawędziami + sklejka ——————
+  const gfr = grp('frame'), gpl = grp('ply'), W = 8;
+  for (let k = 1; k <= 8; k++) {
+    const s = st(k), nx = st(k + 1);
+    const ply = clipBox(s.poly, { x0: OS0 });
+    const zt = bT(k) - P.ply;
+    prism(gpl, ply, zt, bT(k), M.ply);
+    stats.ply.push({ n: k, poly: ply });
+    const c = centroid(ply);
+    ply.forEach((p, i) => {
+      const q = ply[(i + 1) % ply.length];
+      if (onLine(p, q, nx.front)) return;                     // tę krawędź niesie ścianka następnego stopnia
+      const isFront = onLine(p, q, s.front);
+      const seg = isFront ? shiftSeg([p, q], P.rb, c) : [p, q];
+      const poly = clipToPoly(strip(seg[0], seg[1], W, c), ply);
+      if (poly.length < 3) return;
+      prism(gfr, poly, 0, zt, M.frame);
+      stats.walls.push({ n: k, kind: isFront ? 'pod podstopnicą' : 'boczna', len: spanAlong(poly, seg), h: zt });
+    });
+  }
+  // S9 – ścianka pod podstopnicą 9: dźwiga tył sklejki 8 i stopy obu policzków
+  const zF = bT(8) - P.ply;
+  box(gfr, OS0, ST0, 86, 96, 0, zF, M.frame);
+  stats.walls.push({ n: 9, kind: 'pod podstopnicą 9 + stopa policzków (gr. 10)', len: ST0 - OS0, h: zF, thick: true });
+
+  // fronty meblowe na licu y = 0 (kubiki)
+  const gf = grp('fronts');
+  for (let k = 1; k <= 8; k++) {
+    const poly = st(k).poly;
+    poly.forEach((p, i) => {
+      const q = poly[(i + 1) % poly.length];
+      if (Math.abs(p[1]) < 1e-6 && Math.abs(q[1]) < 1e-6) box(gf, Math.min(p[0], q[0]), Math.max(p[0], q[0]), -1.8, 0, 0, bT(k), M.fronts);
+    });
+  }
+
+  // — Stopnice dębowe ——————————————————————————————————————————
+  const gt = grp('treads');
+  for (const s of steps) {
+    const b = s.n <= 8 ? { x0: 0.5, x1: 215, y0: -P.nos, y1: 90 } : { x0: 0.5, x1: s.n === 21 ? SLAB_X0 : GK_X0, y0: 80, y1: 419.5 };
+    const poly = clipBox(offsetFront(s.poly, s.front, P.nos), b);
+    prism(gt, poly, bT(s.n), top(s.n), M.oak);
+    const n = frontNormal(s.poly, s.front);
+    stats.treads.push({ n: s.n, poly, front: s.front.map(p => [p[0] + n[0] * P.nos, p[1] + n[1] * P.nos]) });
+    const c = centroid(poly);
+    label(grp('stepno'), V(c[0], c[1], top(s.n) + 1), s.n === 21 ? '21 · +3,82' : String(s.n), 'stepno');
+  }
+
+  // — Podstopnice (za linią czoła, pod noskiem) ————————————————————
+  const gr = grp('risers');
+  for (const s of steps) {
+    const seg = clipSeg(s.front[0], s.front[1], s.n <= 8 ? { x0: 0.5 } : { x0: 0.5, x1: GK_X0, y1: 419.5 });
+    if (!seg) continue;
+    const poly = clipToPoly(strip(seg[0], seg[1], P.rb, centroid(s.poly)), s.poly);
+    const z0 = s.n === 1 ? 0 : s.n === 9 ? zF : bT(s.n - 1);
+    prism(gr, poly, z0, bT(s.n), M.riser);
+    stats.risers.push({ n: s.n, len: segLen(seg), h: bT(s.n) - z0 });
+  }
+
+  // — Policzki zębate 9–18 (BSH 8 × D) ————————————————————————————
+  const gs = grp('stringers');
+  const y9 = 90 + P.rb, yEnd = 340;
+  const zo = y => bT(9) + (y - y9) * H / G;                   // linia wierzchołków zębów
+  const zb = y => Math.max(zF, zo(y) - P.D * SEC);            // spód policzka (stopa płaska na S9)
+  const sp = [[y9, zF], [y9, bT(9)]];
+  for (let k = 9; k <= 18; k++) {
+    const yb = k === 18 ? yEnd : 90 + 24 * (k - 8) + P.rb;
+    sp.push([yb, bT(k)]);
+    if (k < 18) sp.push([yb, bT(k + 1)]);
+  }
+  const yf = y9 + Math.max(0.5, (zF - bT(9) + P.D * SEC) * G / H);
+  sp.push([yEnd, zo(yEnd) - P.D * SEC], [yf, zF]);
+  prismYZ(gs, sp, OS0, OS1, M.bsh);
+  prismYZ(gs, sp, IS0, IS1, M.bsh);
+  const strLen = Math.hypot(yEnd - y9, zo(yEnd) - zF) + 10;
+  piece('PZ – policzek zewnętrzny', `BSH 8×${P.D}`, strLen, 'zęby wg szablonu 18,19 / 24, stopa na S9, koniec na O3');
+  piece('PW – policzek wewnętrzny', `BSH 8×${P.D}`, strLen, 'przykręcony do słupków ściany, stopa na S9, koniec na N1');
+
+  // — Stopnie zabiegowe 19–21: sklejka + piętrzone legary ——————————————
+  for (const n of [19, 20, 21]) {
+    let p = st(n).poly;
+    if (n < 21) p = offsetFront(p, st(n + 1).front, P.rb + 6);   // sklejka wchodzi pod legar następnego stopnia
+    p = clipBox(p, { x0: OS0, x1: n === 21 ? SLAB_X0 : ST0, y1: 419 });
+    prism(gpl, p, bT(n) - P.ply, bT(n), M.ply);
+    stats.ply.push({ n, poly: p });
+  }
+  const gb = grp('beams'), gp = grp('posts');
+  const c19 = centroid(st(19).poly), c20 = centroid(st(20).poly), c21 = centroid(st(21).poly);
+  const f19 = shiftSeg(st(19).front, P.rb, c19), f20 = shiftSeg(st(20).front, P.rb, c20), f21 = shiftSeg(st(21).front, P.rb, c21);
+  const cl = { x0: OS0, x1: ST0, y1: 409 };
+  const zJ = bT(19) - 16;                                    // spód belki okiennej B1
+  const hJ = `KVH 6×${fmt(H - P.ply)}`;
+  beam(gb, 'J19 – pod podstopnicą 19', hJ, f19, 6, c19, bT(18), bT(19) - P.ply, M.kvh, { x0: OS0, x1: ST0 }, 'leży na końcach obu policzków');
+  beam(gb, 'J19h – pod sklejką 19, linia czoła 20', hJ, f20, 6, c20, bT(18), bT(19) - P.ply, M.kvh, cl, 'N1/PW → O4');
+  beam(gb, 'J20 – pod podstopnicą 20', hJ, f20, 6, c20, bT(19), bT(20) - P.ply, M.kvh, cl, 'stoi na sklejce 19 nad J19h');
+  beam(gb, 'J20h – pod sklejką 20, linia czoła 21', hJ, f21, 6, c21, bT(19), bT(20) - P.ply, M.kvh, cl, 'węzeł → B1/Lw20 (wieszak)');
+  beam(gb, 'J21 – pod podstopnicą 21', hJ, f21, 6, c21, bT(20), bT(21) - P.ply, M.kvh, { x0: OS0, x1: 89, y1: 409 }, 'L1 ↔ Lw21, wieszaki');
+  bx(gb, 'Lz19 – legar boczny 19', hJ, OS0, OS0 + 6, yEnd, 385, bT(18), bT(19) - P.ply, M.kvh, undefined, 'koniec PZ → O4, 1,5 cm od ściany');
+  bx(gb, 'Lz20 – legar boczny 20', hJ, OS0, OS0 + 6, 385, 409, bT(19), bT(20) - P.ply, M.kvh, undefined, 'O4 → B1');
+  bx(gb, 'B1 – belka przy oknie', 'KVH 10×16', PO0, ST0, 409, 419, zJ, bT(19), M.kvh, undefined, 'na P3 i P2, 1 cm od ściany okiennej');
+  bx(gb, 'Lw20 – legar na B1', hJ, OS0, ST0, 409, 415, bT(19), bT(20) - P.ply, M.kvh, undefined, 'pod sklejką 20');
+  bx(gb, 'Lw21 – legar na Lw20', hJ, 30, 89, 409, 415, bT(20), bT(21) - P.ply, M.kvh, undefined, 'pod sklejką 21, przekładka 22 mm');
+  bx(grp('ledger'), 'L1 – listwa przy krawędzi stropu', 'KVH 6×14', 89, SLAB_X0, 330, 419, SLAB_BOT, bT(21) - P.ply, M.anchor, undefined,
+     'kotwy mechaniczne w czoło stropu wg konstruktora');
+
+  // — Słupy 10×10 ——————————————————————————————————————————————
+  const posts = [
+    ['O1', PO0, PO1, 111, 121, zb(111)], ['O2', PO0, PO1, 221, 231, zb(221)], ['O3', PO0, PO1, 330, 340, zb(330)],
+    ['O4', PO0, PO1, 375, 385, bT(18)],  ['P3', PO0, PO1, 409, 419, zJ],
+    ['J1', PJ0, PJ1, 111, 121, zb(111)], ['J2', PJ0, PJ1, 221, 231, zb(221)], ['J3', PJ0, PJ1, 270, 280, zb(270)],
+    ['N1', PJ0, PJ1, 330, 340, zb(330)], ['P2', PJ0, PJ1, 409, 419, zJ],
+  ];
+  for (const [n, x0, x1, y0, y1, z1] of posts)
+    bx(gp, `${n} – słup`, 'KVH 10×10', x0, x1, y0, y1, 0, z1, M.post, z1,
+       n[0] === 'O' || n === 'P3' ? 'wolnostojący, 1,5 cm od ściany zewn.' : 'skręcony ze słupkiem ściany');
+
+  // — Rygle stężające: słup zewnętrzny ↔ słup wewnętrzny / ściana ————————
+  const grg = grp('rygle');
+  for (const [y0, y1, x1, levels] of [[111, 121, PJ0, [NICHE.h + 2]], [221, 231, PJ0, [NICHE.h + 2]], [330, 340, PJ0, [NICHE.h + 2, 240]],
+                                      [375, 385, ST0, [NICHE.h + 2, 240]], [409, 419, PJ0, [NICHE.h + 2, 240]]]) {
+    const ym = (y0 + y1) / 2;
+    for (const z of levels) bx(grg, 'R – rygiel', 'KVH 6×10', PO1, x1, ym - 3, ym + 3, z, z + 10, M.rygiel);
+  }
+
+  // — Ściana wewnętrzna: szkielet KVH 6×10 (podwalina, oczep, słupki) ——————
+  const gw = grp('wall');
+  bx(gw, 'Ściana – podwalina', `KVH 6×${P.stud}`, ST0, ST1, 90, NICHE.y0, 0, 6, M.stud, undefined, 'na elastomerze');
+  bx(gw, 'Ściana – podwalina', `KVH 6×${P.stud}`, ST0, ST1, NICHE.y1, 419, 0, 6, M.stud, undefined, 'na elastomerze');
+  bx(gw, 'Ściana – oczep', `KVH 6×${P.stud}`, ST0, ST1, 90, 419, SLAB_BOT - 6, SLAB_BOT, M.stud, undefined, 'kotwiony do spodu stropu');
+  for (const y of [90, 109, 227, 270, 324, 375, 413])
+    bx(gw, 'Ściana – słupek', `KVH 6×${P.stud}`, ST0, ST1, y, y + 6, 6, SLAB_BOT - 6, M.stud, SLAB_BOT - 12);
+  for (const y of [115, 221])
+    bx(gw, 'Ściana – słupek pod nadprożem', `KVH 6×${P.stud}`, ST0, ST1, y, y + 6, 6, NICHE.h, M.stud, NICHE.h - 6);
+  bx(gw, 'Ściana – nadproże nad niszą', `KVH ${P.stud}×20`, ST0, ST1, 115, 227, NICHE.h, NICHE.h + 20, M.stud, 112);
+  bx(gw, 'Ściana – słupek nad nadprożem', `KVH 6×${P.stud}`, ST0, ST1, 168, 174, NICHE.h + 20, SLAB_BOT - 6, M.stud, SLAB_BOT - 6 - NICHE.h - 20);
+
+  // — Płyty g-k ——————————————————————————————————————————————————
+  const gg = grp('gk');
+  box(gg, ST1, RM1, 90, NICHE.y0, 0, SLAB_BOT, M.gk);                // od strony pokoju (2 × 12,5 mm)
+  box(gg, ST1, RM1, NICHE.y0, NICHE.y1, NICHE.h, SLAB_BOT, M.gk);
+  box(gg, ST1, RM1, NICHE.y1, 419, 0, SLAB_BOT, M.gk);
+  const gkStair = [[90, top(9)]];                                     // od strony biegu – nad linią stopni
+  for (let k = 9; k <= 18; k++) { const yb = 90 + 24 * (k - 8); gkStair.push([yb, top(k)]); if (k < 18) gkStair.push([yb, top(k + 1)]); }
+  gkStair.push([330, SLAB_BOT], [90, SLAB_BOT]);
+  prismYZ(gg, gkStair, GK_X0, ST0, M.gk);
+  box(gg, GK_X0, SLAB_X0, 90, 330, SLAB_BOT, SLAB_TOP, M.gkWall);
+  box(gg, GK_X0, RM1, 90, 330, SLAB_TOP, SLAB_TOP + 110, M.gkWall);
+  stats.gk = (2 * (419 - 90) * SLAB_BOT - 2 * (NICHE.y1 - NICHE.y0) * NICHE.h + area(gkStair)) / 1e4;   // m² płyty
+
+  // — Strop antresoli (orientacyjnie) ——————————————————————————————
+  const gsl = grp('slab');
+  box(gsl, SLAB_X0, 330, -60, 420, SLAB_BOT, SLAB_TOP, M.slab);
+  label(gsl, V(200, 380, SLAB_TOP + 2), '+3,82 antresola', 'stepno');
+  label(gsl, V(200, 150, 1), '±0,00', 'stepno');
+
+  // — Ściany zewnętrzne ——————————————————————————————————————————
+  const gwl = grp('walls');
+  box(gwl, -35, 0, -60, 455, 0, CEIL, M.wall);
+  box(gwl, 0, 130, 420, 455, 0, CEIL, M.wall);
+
+  // — Pochwyt wpuszczany w ścianę (0,9 m nad linią nosków) ——————————
+  const segsStraight = []; for (let k = 9; k <= 18; k++) { const ya = 90 + 24 * (k - 9); segsStraight.push([ya, ya + 24, k]); }
+  const railPts = [[0, 7], [40, 8], ...segsStraight.map(([ya, , k]) => [ya, k]), [330, 19], [380, 20], [412, 21]]
+    .map(([y, k]) => V(-2.5, y, 90 + k * H));
+  const rail = new THREE.TubeGeometry(new THREE.CatmullRomCurve3(railPts, false, 'centripetal'), 120, 1.6, 10, false);
+  addMesh(grp('rail'), rail, M.rail, null);
+
+  // — Legowisko dla psa + sufit niszy ————————————————————————————————
+  const gn = grp('niche');
+  const ng = new THREE.EdgesGeometry(new THREE.BoxGeometry(GK_X0 - 5, NICHE.h, NICHE.y1 - NICHE.y0));
+  const nl = new THREE.LineSegments(ng, NICHE_LINE); nl.computeLineDistances();
+  nl.position.copy(V((GK_X0 + 5) / 2, (NICHE.y0 + NICHE.y1) / 2, NICHE.h / 2)); gn.add(nl);
+  label(gn, V(45, (NICHE.y0 + NICHE.y1) / 2, NICHE.h / 2), 'legowisko dla psa 100×120', 'stepno');
+  box(gpl, PO1, PJ0, NICHE.y0, NICHE.y1, NICHE.h, NICHE.h + 1.8, M.ply);
+  stats.nicheCeil = (PJ0 - PO1) * (NICHE.y1 - NICHE.y0) / 1e4;
+
+  // — Opisy elementów ——————————————————————————————————————————
+  const gl = grp('parts');
+  label(gl, V(OS0, 260, zo(260) - 22), `PZ – policzek zewn. BSH 8×${P.D}`, 'part');
+  label(gl, V(IS0, 190, zo(190) - 22), 'PW – policzek wewn. (przy ścianie)', 'part');
+  label(gl, V(150, 45, 55), 'S1–S8: ścianki 45×45 + sklejka 18', 'part');
+  label(gl, V(45, 91, zF - 25), 'S9 – stopa policzków', 'part');
+  for (const [n, x0, x1, y0, y1, z1] of posts) label(gl, V((x0 + x1) / 2, (y0 + y1) / 2, z1 * 0.45), n, 'part');
+  label(gl, V(92, 380, 370), 'L1 – kotwy w czoło stropu', 'part');
+  label(gl, V(45, 414, zJ + 8), 'B1', 'part');
+  label(gl, V(45, 352, bT(19) + 8), 'J20 / J21 – legary zabiegowe', 'part');
+  label(gl, V(ST1, 300, 200), 'ściana: KVH 6×10 co ≤ 60 cm', 'part');
+  label(gl, V(ST1, 171, NICHE.h + 10), 'nadproże 10×20', 'part');
+
+  // — Wymiary ——————————————————————————————————————————————————
+  chain([0, 34.5, 90, 114, 138, 162, 186, 210], x => [x, -22, 0]);
+  dim([0, -40, 0], [210, -40, 0], '210');
+  chain([0, 40, 90, ...segsStraight.map(s => s[1]), 380, 420], y => [-55, y, 0], [3, 0, 0]);
+  dim([-75, 0, 0], [-75, 420, 0], '420', [3, 0, 0]);
+  dim([225, 0, 0], [225, 90, 0], '90', [3, 0, 0]);
+  dim([225, 90, 0], [225, 420, 0], '330', [3, 0, 0]);
+  dim([120, 418, 0], [120, 418, HTOT], `382 = 21 × ${fmt(H)}`, [3, 0, 0]);
+  dim([88, 186, 12 * H], [88, 186, 13 * H], `h ${fmt(H)}`, [3, 0, 0]);
+  dim([88, 186, 13 * H + 1.5], [88, 210, 13 * H + 1.5], 's 24', [0, 0, 2]);
+  dim([0.5, 258, 15 * H + 3], [90, 258, 15 * H + 3], '90', [0, 0, 2]);
+  dim([GK_X0, 300, SLAB_BOT + 30], [RM1, 300, SLAB_BOT + 30], `ściana ${fmt(RM1 - GK_X0)}`, [0, 0, 2]);
+  dim([98, NICHE.y0, NICHE.h + 4], [98, NICHE.y1, NICHE.h + 4], '100', [0, 0, 2]);
+  dim([98, NICHE.y0 - 3, 0], [98, NICHE.y0 - 3, NICHE.h], '120', [2, 0, 0]);
+  dim([150, 300, SLAB_BOT], [150, 300, SLAB_TOP], '20', [3, 0, 0]);
+  dim([85, 150, 11 * H], [85, 150, HTOT], `${fmt(HTOT - 11 * H)} – zab. antresoli 140`, [2, 0, 0], true);
+  dim([85, 174, 12 * H], [85, 174, HTOT], `${fmt(HTOT - 12 * H)} – zab. antresoli 190`, [2, 0, 0], true, [0, 0, -30]);
+
+  stats.waist = P.D - NOTCH;
+  stats.nicheGap = zb(NICHE.y0) - NICHE.h - 1.8;
+  stats.wallT = RM1 - GK_X0;
+  applyLayers();
+  renderStats();
+  if (!sheetEl.hidden) renderSheet();
+}
+
+// CSS2DRenderer patrzy tylko na widoczność samej etykiety, nie rodzica
+function applyLayers() {
+  for (const [k, g] of Object.entries(groups)) {
+    g.visible = !!layerState[k];
+    g.traverse(o => { if (o.isCSS2DObject) o.visible = g.visible; });
+  }
+}
+
+// ─────────────────────────────────────────────────────────────
+// Panel
+// ─────────────────────────────────────────────────────────────
+const layersEl = document.getElementById('layers');
+for (const [k, name, color] of LAYERS) {
+  const l = document.createElement('label'); l.className = 'chk';
+  l.innerHTML = `<input type="checkbox" ${layerState[k] ? 'checked' : ''}><span class="sw" style="background:#${color.toString(16).padStart(6, '0')}"></span>${name}`;
+  l.querySelector('input').addEventListener('change', e => { layerState[k] = e.target.checked; applyLayers(); });
+  layersEl.appendChild(l);
+}
+const paramsEl = document.getElementById('params');
+for (const [k, name, min, max, step] of PARAMS) {
+  const d = document.createElement('div'); d.className = 'row';
+  d.innerHTML = `<label>${name}<br><input type="range" min="${min}" max="${max}" step="${step}" value="${P[k]}"></label><output>${fmt(P[k])} cm</output>`;
+  const inp = d.querySelector('input'), out = d.querySelector('output');
+  inp.addEventListener('input', () => { P[k] = +inp.value; out.textContent = `${fmt(P[k])} cm`; build(); });
+  paramsEl.appendChild(d);
+}
+const cut = document.getElementById('cut'), cutOut = document.getElementById('cutOut');
+cut.addEventListener('input', () => {
+  const v = +cut.value, off = v >= 240;
+  clipPlane.constant = off ? 1e5 : v;
+  cutOut.textContent = off ? 'wył.' : `X ${v}`;
+});
+
+// ─────────────────────────────────────────────────────────────
+// Ilości i ciężary
+// ─────────────────────────────────────────────────────────────
+const secArea = s => { const m = s.match(/(\d+(?:[.,]\d+)?)×(\d+(?:[.,]\d+)?)/); return m ? parseFloat(m[1].replace(',', '.')) * parseFloat(m[2].replace(',', '.')) : 0; };
+const wallTimber = w => 2 * w.len + (Math.ceil(w.len / 40) + 1) * w.h;     // kantówka: podwalina + oczep + słupki co 40 cm
+function quantities() {
+  const bySec = {};
+  for (const p of stats.pieces) {
+    const g = bySec[p.sec] || (bySec[p.sec] = { n: 0, len: 0, vol: 0 });
+    g.n++; g.len += p.len; g.vol += p.len * secArea(p.sec);
+  }
+  const vol = Object.values(bySec).reduce((s, g) => s + g.vol, 0) / 1e6;                  // m³ KVH/BSH
+  const kant = stats.walls.reduce((s, w) => s + wallTimber(w), 0) / 100;                  // mb kantówki
+  const ply18 = stats.walls.reduce((s, w) => s + 2 * w.len * w.h, 0) / 1e4 + stats.nicheCeil; // m²
+  const ply22 = stats.ply.reduce((s, p) => s + area(p.poly), 0) / 1e4;                    // m²
+  const oak = stats.treads.reduce((s, t) => s + area(t.poly), 0) / 1e4;                   // m² stopnic
+  const ris = stats.risers.reduce((s, r) => s + r.len * r.h, 0) / 1e4;                    // m² podstopnic
+  const kg = {
+    timber: vol * 470 + kant * 0.045 * 0.045 * 470,
+    ply: ply18 * 11.7 + ply22 * 14.3,
+    oak: oak * P.tt / 100 * 720 + ris * P.rb / 100 * 720,
+    gk: stats.gk * 9,
+  };
+  return { bySec, vol, kant, ply18, ply22, oak, ris, kg };
+}
+
+function renderStats() {
+  const q = quantities(), rule = 2 * H + G;
+  const kgAll = q.kg.timber + q.kg.ply + q.kg.oak;
+  document.getElementById('stats').innerHTML = `
+  <table>
+    <tr><td>Podniesienie h (21 szt.)</td><td>${fmt(H)} cm</td></tr>
+    <tr><td>Stopień konstr. / efektywny</td><td>24 / ${fmt(24 + P.nos)} cm</td></tr>
+    <tr><td>2h + s</td><td class="${rule >= 60 && rule <= 65 ? 'ok' : 'warn'}">${fmt(rule)} cm</td></tr>
+    <tr><td>Legar zabiegowy + sklejka</td><td>${fmt(H - P.ply)} + ${fmt(P.ply)} = 1 podniesienie</td></tr>
+    <tr><td>Policzek BSH 8×${P.D}: przekrój pod zębem</td><td class="${stats.waist >= 12 ? 'ok' : 'warn'}">${fmt(stats.waist)} cm</td></tr>
+    <tr><td>KVH / BSH (belki, słupy, ściana)</td><td>${q.vol.toFixed(2).replace('.', ',')} m³</td></tr>
+    <tr><td>Kantówka 45×45 (ścianki 1–9)</td><td>ok. ${Math.ceil(q.kant)} mb</td></tr>
+    <tr><td>Sklejka 18 mm (ścianki, sufit niszy)</td><td>${fmt(q.ply18)} m²</td></tr>
+    <tr><td>Sklejka 22 mm pod stopnicami</td><td>${fmt(q.ply22)} m²</td></tr>
+    <tr><td>Stopnice dębowe ${fmt(P.tt)} cm (21 szt.)</td><td>${fmt(q.oak)} m²</td></tr>
+    <tr><td>Płyty g-k 12,5 mm</td><td>ok. ${Math.ceil(stats.gk)} m²</td></tr>
+    <tr><td>Grubość ściany wewn. (g-k + 10 + 2 × g-k)</td><td class="warn">${fmt(stats.wallT)} cm</td></tr>
+    <tr><td>Ciężar: drewno + sklejka + dąb</td><td>ok. ${Math.round(kgAll / 10) * 10} kg</td></tr>
+    <tr><td>&nbsp;&nbsp;z płytami g-k</td><td>ok. ${Math.round((kgAll + q.kg.gk) / 10) * 10} kg</td></tr>
+    <tr><td>Zapas: sufit niszy → spód policzka</td><td class="${stats.nicheGap > 10 ? 'ok' : 'warn'}">${fmt(stats.nicheGap)} cm</td></tr>
+  </table>`;
+}
+
+document.getElementById('notes').innerHTML = [
+  'Nic nie jest kotwione do ściany zewnętrznej ani okiennej. Policzek zewnętrzny, słupy O1–O4 i P3 stoją 1,5 cm od ściany, a szczelina jest wypełniona elastyczną taśmą. Pochwyt w ścianie to tylko wykończenie.',
+  'Obciążenie idzie w dół: przez podwaliny ścianek, ścianę szkieletową i stopy słupów na posadzkę i strop pod spodem. Do krawędzi stropu antresoli mocowana jest tylko listwa <b>L1</b> pod wejściem (stopień 21).',
+  '<span class="warn">Do sprawdzenia przez konstruktora: strop pod biegiem (nad lokalem poniżej) pod reakcje ze słupów i ścianek, kotwienie L1 w czoło stropu (np. kotwy mechaniczne jak w opracowaniu KLO), przekroje z tego modelu.</span>',
+  '<span class="warn">Ściana wewnętrzna ma ok. 14 cm (szkielet 10 cm + g-k), a w projekcie EKR 5 cm. Trzeba zmierzyć, gdzie naprawdę jest krawędź stropu antresoli, i sprawdzić, ile miejsca zabierze to pokojowi pod antresolą.</span>',
+  'Posadzka: najlepiej postawić podwaliny i stopy słupów na płycie stropowej przed wylewką i z dylatacją. Jeśli jastrych już jest, słupy stawia się na stalowych podstawach z podkładką rozkładającą nacisk. Przed kotwieniem trzeba sprawdzić rury ogrzewania podłogowego.',
+  'Akustyka: elastomer pod wszystkimi podwalinami i stopami słupów (izolacja od stropu nad sąsiadem), wełna w przestrzeni pod biegiem, stopnice i podstopnice klejone i wkręcane.',
+  'Drewno KVH/BSH suszone komorowo (≤ 15 %). Dąb aklimatyzować na miejscu ok. 2 tygodnie. Montaż dopiero po tynkach i wylewkach.',
+  '<span class="warn">Wysokość w krytycznym miejscu (st. 11–12 → +3,82): 182 / 163,5 cm z przekroju – do weryfikacji z zabudową antresoli.</span>',
+  'Przekroje i łączniki są założeniami koncepcji do weryfikacji. Model służy do rozmowy z konstruktorem i do zakupów.',
+].map(t => `<li>${t}</li>`).join('');
+
+// ─────────────────────────────────────────────────────────────
+// Arkusz: lista elementów, stopnice, podstopnice
+// ─────────────────────────────────────────────────────────────
+const sheetEl = document.getElementById('sheet');
+document.getElementById('openSheet').addEventListener('click', () => { renderSheet(); sheetEl.hidden = false; });
+document.getElementById('closeSheet').addEventListener('click', () => { sheetEl.hidden = true; });
+document.getElementById('printSheet').addEventListener('click', () => print());
+
+const numRange = ns => ns.length > 1 && ns[ns.length - 1] - ns[0] === ns.length - 1 ? `${ns[0]}–${ns[ns.length - 1]}` : ns.join(', ');
+function edgeTag(p, q) {
+  const near = (a, b) => Math.abs(a - b) < 0.05;
+  if (near(p[0], 0.5) && near(q[0], 0.5)) return 'ściana zewn.';
+  if (near(p[0], GK_X0) && near(q[0], GK_X0)) return 'zabudowa g-k';
+  if (near(p[0], SLAB_X0) && near(q[0], SLAB_X0)) return 'krawędź stropu';
+  if (near(p[1], 419.5) && near(q[1], 419.5)) return 'ściana okienna';
+  return '';
+}
+// obrót stopnicy tak, żeby krawędź czołowa leżała poziomo na dole (bez odbicia lustrzanego – widok z góry)
+function normTread(t) {
+  const P0 = t.poly, N = P0.length, onFront = p => lineDist(p, ...t.front) < 0.05;
+  const fi = P0.findIndex((p, i) => onFront(p) && onFront(P0[(i + 1) % N]));
+  const a = P0[fi], b = P0[(fi + 1) % N], ang = Math.atan2(b[1] - a[1], b[0] - a[0]);
+  const rot = A => P0.map(p => { const x = p[0] - a[0], y = p[1] - a[1]; return [x * Math.cos(A) - y * Math.sin(A), x * Math.sin(A) + y * Math.cos(A)]; });
+  let pts = rot(-ang);
+  if (centroid(pts)[1] > 0) pts = rot(Math.PI - ang);
+  const mx = Math.min(...pts.map(p => p[0])), my = Math.min(...pts.map(p => p[1]));
+  pts = pts.map(p => [p[0] - mx, p[1] - my]);
+  return { pts, fi, W: Math.max(...pts.map(p => p[0])), D: Math.max(...pts.map(p => p[1])) };
+}
+function treadSVG(t, { pts, fi, W, D }) {
+  const N = pts.length, c = centroid(pts), pad = 11;
+  let g = `<polygon points="${pts.map(p => p.map(v => v.toFixed(2)).join(',')).join(' ')}" fill="#f1dfc2" stroke="#1d2126" stroke-width="0.4" stroke-linejoin="round"/>`;
+  const a = pts[fi], b = pts[(fi + 1) % N];
+  g += `<line x1="${a[0]}" y1="${a[1]}" x2="${b[0]}" y2="${b[1]}" stroke="#d9480f" stroke-width="1.1"/>`;
+  pts.forEach((p, i) => {
+    const q = pts[(i + 1) % N], len = Math.hypot(q[0] - p[0], q[1] - p[1]);
+    const mx = (p[0] + q[0]) / 2, my = (p[1] + q[1]) / 2;
+    let nx = -(q[1] - p[1]) / len, ny = (q[0] - p[0]) / len;
+    if ((c[0] - mx) * nx + (c[1] - my) * ny > 0) { nx = -nx; ny = -ny; }
+    let r = Math.atan2(q[1] - p[1], q[0] - p[0]) * 180 / Math.PI;
+    if (r > 90) r -= 180; if (r < -90) r += 180;
+    const lx = mx + nx * 4, ly = my + ny * 4;
+    g += `<text x="${lx}" y="${ly}" text-anchor="middle" dominant-baseline="middle" transform="rotate(${r} ${lx} ${ly})">${fmt(len)}</text>`;
+    const tag = i === fi ? 'przód (nosek)' : edgeTag(t.poly[i], t.poly[(i + 1) % N]);
+    if (tag) { const tx = mx - nx * 3.5, ty = my - ny * 3.5; g += `<text class="tag" x="${tx}" y="${ty}" text-anchor="middle" dominant-baseline="middle" transform="rotate(${r} ${tx} ${ty})">${tag}</text>`; }
+  });
+  pts.forEach((p, i) => {
+    const pr = pts[(i - 1 + N) % N], nx = pts[(i + 1) % N];
+    const v1 = [pr[0] - p[0], pr[1] - p[1]], v2 = [nx[0] - p[0], nx[1] - p[1]];
+    const deg = Math.acos((v1[0] * v2[0] + v1[1] * v2[1]) / (Math.hypot(...v1) * Math.hypot(...v2))) * 180 / Math.PI;
+    if (Math.abs(deg - 90) < 0.3) return;
+    const dc = Math.hypot(c[0] - p[0], c[1] - p[1]), k = Math.min(9, dc * 0.45);
+    g += `<text class="ang" x="${p[0] + (c[0] - p[0]) / dc * k}" y="${p[1] + (c[1] - p[1]) / dc * k}" text-anchor="middle" dominant-baseline="middle">${fmt(deg)}°</text>`;
+  });
+  return `<svg viewBox="${-pad} ${-pad} ${W + 2 * pad} ${D + 2 * pad}" role="img" aria-label="stopnica ${t.n}">${g}</svg>`;
+}
+function renderSheet() {
+  const q = quantities();
+  const tbl = (head, rows) => `<tr>${head.map(h => `<th>${h}</th>`).join('')}</tr>` + rows.join('');
+  const td = (v, num) => `<td${num ? ' class="num"' : ''}>${v}</td>`;
+
+  // drewno wg przekroju
+  const secs = Object.entries(q.bySec).sort((a, b) => secArea(b[0]) - secArea(a[0]));
+  document.getElementById('sheetTimber').innerHTML = tbl(['Przekrój', 'Elementów', 'Długość łączna', '+10 % zapasu', 'Objętość'],
+    secs.map(([s, g]) => `<tr>${td(s)}${td(g.n, 1)}${td(fmt(g.len / 100) + ' m', 1)}${td(Math.ceil(g.len * 1.1 / 100) + ' m', 1)}${td(g.vol.toFixed(0) === '0' ? '–' : (g.vol / 1e6).toFixed(3).replace('.', ',') + ' m³', 1)}</tr>`)
+    .concat(`<tr>${td('<b>Kantówka 45×45</b> (ścianki 1–9)')}${td('', 1)}${td(fmt(q.kant) + ' m', 1)}${td(Math.ceil(q.kant * 1.1) + ' m', 1)}${td('', 1)}</tr>`));
+
+  // lista cięć – grupowanie po nazwie, przekroju i długości
+  const groupsP = [];
+  for (const p of stats.pieces) {
+    const key = `${p.name}|${p.sec}|${Math.round(p.len)}`;
+    const g = groupsP.find(g => g.key === key);
+    if (g) g.n++; else groupsP.push({ key, p, n: 1 });
+  }
+  document.getElementById('sheetPieces').innerHTML = tbl(['Element', 'Przekrój', 'Szt.', 'Długość [cm]', 'Uwagi'],
+    groupsP.map(({ p, n }) => `<tr>${td(p.name)}${td(p.sec)}${td(n, 1)}${td(Math.ceil(p.len), 1)}${td(p.note || '')}</tr>`));
+
+  // ścianki
+  document.getElementById('sheetWalls').innerHTML = tbl(['Stopień', 'Ścianka', 'Długość [cm]', 'Wysokość [cm]', 'Kantówka [mb]', 'Sklejka 18 [m²]'],
+    stats.walls.map(w => `<tr>${td(w.n)}${td(w.kind)}${td(fmt(w.len), 1)}${td(fmt(w.h), 1)}${td(fmt(wallTimber(w) / 100), 1)}${td(fmt(2 * w.len * w.h / 1e4), 1)}</tr>`)
+    .concat(`<tr>${td('<b>Razem</b>')}${td('')}${td('', 1)}${td('', 1)}${td('<b>' + fmt(q.kant) + '</b>', 1)}${td('<b>' + fmt(q.ply18 - stats.nicheCeil) + '</b>', 1)}</tr>`));
+
+  // sklejka pod stopnicami
+  document.getElementById('sheetPly').innerHTML = tbl(['Stopień', 'Obrys [cm]', 'Pole [m²]', 'Uwagi'],
+    stats.ply.map(p => {
+      const xs = p.poly.map(v => v[0]), ys = p.poly.map(v => v[1]);
+      return `<tr>${td(p.n)}${td(`${fmt(Math.max(...xs) - Math.min(...xs))} × ${fmt(Math.max(...ys) - Math.min(...ys))}`, 1)}${td(fmt(area(p.poly) / 1e4), 1)}${td(p.n >= 19 && p.n < 21 ? 'wchodzi pod legar następnego stopnia' : '')}</tr>`;
+    }).concat(`<tr>${td('<b>Razem</b>')}${td('', 1)}${td('<b>' + fmt(q.ply22) + '</b>', 1)}${td('kleić PU + wkręcać do ścianek / legarów co 15 cm')}</tr>`));
+
+  // stopnice dębowe (grupowanie identycznych kształtów)
+  const groups = [];
+  for (const t of stats.treads) {
+    const nt = normTread(t), sig = nt.pts.map(p => p.map(v => v.toFixed(1)).join(',')).join(';');
+    const g = groups.find(g => g.sig === sig);
+    if (g) g.ns.push(t.n); else groups.push({ sig, t, nt, ns: [t.n] });
+  }
+  document.getElementById('sheetTreads').innerHTML = groups.map(({ t, nt, ns }) => {
+    const A = area(nt.pts) / 1e4, kind = t.n === 21 ? 'wejście na antresolę' : nt.pts.length === 4 && nt.pts.every((p, i) => {
+      const q2 = nt.pts[(i + 1) % 4]; return Math.abs(p[0] - q2[0]) < 0.05 || Math.abs(p[1] - q2[1]) < 0.05; }) ? 'prosta' : 'zabiegowa';
+    return `<div class="tread"><span class="qty">× ${ns.length}</span><h3>${ns.length > 1 ? 'Stopnie' : 'Stopień'} ${numRange(ns)}</h3>
+      <div class="info">${kind} · obrys ${fmt(nt.W)} × ${fmt(nt.D)} · formatka ≥ ${Math.ceil(nt.W + 2)} × ${Math.ceil(nt.D + 2)} · ${(Math.round(A * 1000) / 1000).toString().replace('.', ',')} m²/szt.</div>
+      ${treadSVG(t, nt)}</div>`;
+  }).join('');
+
+  // podstopnice
+  const groupBy = (list, key) => list.reduce((acc, x) => { const g = acc.find(g => key(g.x) === key(x)); if (g) g.ns.push(x.n); else acc.push({ x, ns: [x.n] }); return acc; }, []);
+  const risers = groupBy(stats.risers, x => `${x.len.toFixed(1)}|${x.h.toFixed(1)}`);
+  document.getElementById('sheetRisers').innerHTML = tbl(['Stopień', 'Szt.', 'Długość', 'Wysokość', 'Uwagi'],
+    risers.map(({ x, ns }) => `<tr>${td(numRange(ns))}${td(ns.length, 1)}${td(fmt(x.len), 1)}${td(fmt(x.h), 1)}${td(x.n === 1 ? 'od posadzki' : x.n === 9 ? 'stoi na S9' : x.len > 91 ? 'krawędź skośna zabiegowa' : '')}</tr>`)
+    .concat(`<tr>${td('<b>Razem</b>')}${td('<b>' + stats.risers.length + '</b>', 1)}${td(fmt(stats.risers.reduce((s, x) => s + x.len, 0)), 1)}${td('', 1)}${td(`dąb / MDF lakierowany ${fmt(P.rb * 10)} mm; wysokość z zakładem pod stopnicę wyżej`)}</tr>`));
+
+  // łączniki
+  const hw = [
+    ['Wkręty konstrukcyjne ciesielskie 8×160–240 (np. HBS / VGZ)', 'ok. 80 szt.', 'policzki do słupków, legary, rygle, słupy do ściany'],
+    ['Wieszaki belek / kątowniki ciesielskie (np. Simpson BSN, ABR)', 'ok. 16 + 24 szt.', 'J20h, J21, Lz19, Lz20, końce policzków, B1'],
+    ['Gwoździe pierścieniowe / wkręty CNA 4×40–60', '1–2 opak.', 'do wieszaków i kątowników'],
+    ['Kotwy mechaniczne do betonu (np. Fischer FAZ II M10)', 'ok. 6–8 szt.', 'L1 w czoło stropu – rozstaw i głębokość wg konstruktora'],
+    ['Wkręty do betonu 7,5×100 / kotwy', 'ok. 25 szt.', 'podwaliny ścianek i ściany, oczep do stropu, stopy słupów'],
+    ['Podstawy słupów stalowe (opcja na gotowym jastrychu)', '10 szt.', 'O1–O4, P2, P3, J1–J3, N1'],
+    ['Taśma / podkład elastomerowy (np. Sylomer, Regupol) 100 mm', 'ok. 15 mb + 10 podkładek', 'pod podwaliny i słupy, szczelina przy ścianie zewn.'],
+    ['Wkręty do sklejki 5×50 / 5×70', 'ok. 500 szt.', 'ścianki 1–9, sklejka pod stopnicami'],
+    ['Klej PU D4 do drewna', '2–3 kg', 'sklejka / ścianki / podstopnice (anty-skrzypienie)'],
+    ['Klej elastyczny MS / PU do stopnic', 'ok. 10 kartuszy', 'stopnice na sklejkę i policzki'],
+    ['Wełna mineralna 5–10 cm', 'ok. 8–10 m²', 'przestrzeń pod biegiem, ściana wewn.'],
+  ];
+  document.getElementById('sheetHw').innerHTML = tbl(['Pozycja', 'Ilość', 'Gdzie'], hw.map(r => `<tr>${r.map(v => td(v)).join('')}</tr>`));
+
+  const kgAll = q.kg.timber + q.kg.ply + q.kg.oak;
+  document.getElementById('sheetMeta').innerHTML =
+    `Podniesienie ${fmt(H)} cm × 21, stopień 24 cm + nosek ${fmt(P.nos)} cm. Stopnice z litego dębu ${fmt(P.tt)} cm, podstopnice ${fmt(P.rb * 10)} mm. ` +
+    `Policzki BSH GL24h 8×${P.D}, słupy i legary KVH C24. Konstrukcja z drewna, sklejki i dębu waży ok. <b>${Math.round(kgAll / 10) * 10} kg</b> ` +
+    `(z płytami g-k ok. ${Math.round((kgAll + q.kg.gk) / 10) * 10} kg). Długości to wymiary netto elementów w cm. ` +
+    `Wszystkie wymiary trzeba zweryfikować na budowie po wylaniu posadzek, a przekroje i łączniki zatwierdzić u konstruktora przed zakupem.`;
+}
+
+// ─────────────────────────────────────────────────────────────
+// Widoki
+// ─────────────────────────────────────────────────────────────
+const VIEWS = {
+  iso:     { pos: V(470, -170, 430), tgt: V(70, 210, 170), fov: 40 },
+  plan:    { pos: V(90, 211, 3200), tgt: V(90, 210, 0), fov: 11 },
+  section: { pos: V(3200, 205, 200), tgt: V(0, 205, 200), fov: 11 },
+  under:   { pos: V(260, 160, 40), tgt: V(40, 250, 230), fov: 55 },
+};
+let anim = null;
+function setView(name) {
+  const v = VIEWS[name];
+  anim = { t0: performance.now(), from: { pos: camera.position.clone(), tgt: controls.target.clone(), fov: camera.fov }, to: v };
+}
+document.querySelectorAll('[data-view]').forEach(b => b.addEventListener('click', () => setView(b.dataset.view)));
+camera.position.copy(VIEWS.iso.pos); controls.target.copy(VIEWS.iso.tgt);
+
+function resize() {
+  const w = app.clientWidth, h = app.clientHeight;
+  renderer.setSize(w, h); labelRenderer.setSize(w, h);
+  camera.aspect = w / h; camera.updateProjectionMatrix();
+}
+addEventListener('resize', resize);
+
+function tick(now) {
+  if (anim) {
+    const k = Math.min(1, (now - anim.t0) / 700), e = k < 0.5 ? 2 * k * k : 1 - (-2 * k + 2) ** 2 / 2;
+    camera.position.lerpVectors(anim.from.pos, anim.to.pos, e);
+    controls.target.lerpVectors(anim.from.tgt, anim.to.tgt, e);
+    camera.fov = anim.from.fov + (anim.to.fov - anim.from.fov) * e; camera.updateProjectionMatrix();
+    if (k === 1) anim = null;
+  }
+  controls.update();
+  renderer.render(scene, camera);
+  labelRenderer.render(scene, camera);
+  requestAnimationFrame(tick);
+}
+
+build();
+resize();
+requestAnimationFrame(tick);
+</script>
+</body>
+</html>

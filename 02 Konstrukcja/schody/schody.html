@@ -1,0 +1,766 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Schody EKR – model 3D konstrukcji</title>
+<style>
+  :root {
+    --bg: #eef0f2; --panel: #ffffff; --ink: #1d2126; --muted: #69707a; --line: #dde1e6;
+    --accent: #d9480f;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; font: 13px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color: var(--ink); background: var(--bg); }
+  #app { position: fixed; inset: 0 0 0 340px; }
+  #labels { position: fixed; inset: 0 0 0 340px; pointer-events: none; }
+  aside { position: fixed; top: 0; left: 0; bottom: 0; width: 340px; overflow-y: auto; background: var(--panel); border-right: 1px solid var(--line); padding: 16px 18px 40px; }
+  h1 { font-size: 16px; margin: 0 0 4px; }
+  h2 { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 18px 0 8px; font-weight: 600; }
+  .sub { color: var(--muted); margin: 0 0 6px; }
+  .views { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+  button { font: inherit; padding: 6px 4px; border: 1px solid var(--line); background: #f7f8f9; border-radius: 6px; cursor: pointer; }
+  button:hover { background: #eceff2; }
+  label.chk { display: flex; align-items: center; gap: 8px; padding: 2px 0; cursor: pointer; }
+  .sw { width: 12px; height: 12px; border-radius: 3px; border: 1px solid rgba(0,0,0,.2); flex: none; }
+  .row { display: grid; grid-template-columns: 1fr 64px; align-items: center; gap: 8px; margin: 4px 0; }
+  .row input[type=range] { width: 100%; }
+  .row output { text-align: right; font-variant-numeric: tabular-nums; }
+  select { width: 100%; font: inherit; padding: 4px; }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  td { padding: 3px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+  td:last-child { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; padding-left: 8px; }
+  ul { padding-left: 16px; margin: 4px 0; }
+  li { margin: 3px 0; }
+  .warn { color: #b3261e; }
+  .ok { color: #2b8a3e; }
+  .hint { color: var(--muted); font-size: 12px; }
+  .dim { font: 600 11px/1 -apple-system, sans-serif; color: #d9480f; background: rgba(255,255,255,.85); padding: 1px 3px; border-radius: 3px; white-space: nowrap; }
+  .dim.red { color: #c92a2a; }
+  .stepno { font: 700 11px/1 -apple-system, sans-serif; color: #1d2126; background: rgba(255,255,255,.75); padding: 1px 4px; border-radius: 8px; }
+  .part { font: 500 11px/1.2 -apple-system, sans-serif; color: #fff; background: rgba(29,33,38,.82); padding: 2px 5px; border-radius: 3px; white-space: nowrap; }
+  .primary { width: 100%; padding: 9px 8px; background: #1d2126; color: #fff; border-color: #1d2126; font-weight: 600; }
+  .primary:hover { background: #343a42; }
+  #sheet { position: fixed; inset: 0; z-index: 20; overflow-y: auto; background: #fff; padding: 24px clamp(16px, 4vw, 48px) 60px; }
+  #sheet .bar { display: flex; gap: 8px; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; margin-bottom: 8px; }
+  #sheet .actions { display: flex; gap: 8px; }
+  #sheet h1 { font-size: 20px; }
+  #sheet h2 { font-size: 12px; margin-top: 26px; }
+  #sheet .meta { color: var(--muted); max-width: 900px; }
+  .treads { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 14px; }
+  .tread { border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; break-inside: avoid; }
+  .tread h3 { margin: 0 0 2px; font-size: 14px; }
+  .tread .qty { float: right; font-weight: 700; color: var(--accent); }
+  .tread .info { color: var(--muted); font-size: 12px; margin-bottom: 4px; }
+  .tread svg { width: 100%; height: auto; display: block; }
+  .tread svg text { font: 3.4px -apple-system, sans-serif; fill: #1d2126; }
+  .tread svg text.ang { fill: #1971c2; font-size: 3px; }
+  .tread svg text.tag { fill: #69707a; font-size: 2.8px; font-style: italic; }
+  .tbl-wrap { overflow-x: auto; }
+  #sheet table { max-width: 900px; font-size: 13px; }
+  #sheet th { text-align: left; font-weight: 600; padding: 4px 8px 4px 0; border-bottom: 2px solid var(--ink); white-space: nowrap; }
+  #sheet td { padding: 4px 8px 4px 0; }
+  #sheet td:last-child { text-align: left; }
+  #sheet td.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  @media print {
+    body > *:not(#sheet) { display: none !important; }
+    #sheet { position: static; overflow: visible; padding: 0; }
+    #sheet .actions { display: none; }
+    .treads { grid-template-columns: repeat(3, 1fr); }
+  }
+  @media (max-width: 760px) {
+    aside { position: static; width: auto; height: auto; border-right: 0; border-bottom: 1px solid var(--line); }
+    #app, #labels { position: relative; inset: auto; height: 70vh; }
+    #labels { position: absolute; top: 0; left: 0; right: 0; }
+    body { overflow: auto; }
+  }
+</style>
+<script type="importmap">
+{ "imports": {
+  "three": "https://unpkg.com/three@0.164.1/build/three.module.js",
+  "three/addons/": "https://unpkg.com/three@0.164.1/examples/jsm/"
+} }
+</script>
+</head>
+<body>
+<aside>
+  <h1>Schody EKR — model konstrukcji</h1>
+  <p class="sub">Koncepcja: stopnie 1–8 murowane (bloczek / pustak), 9–21 stalowa konstrukcja samonośna, niezależna od ściany zewnętrznej. Geometria wg rys. „EKR schody” i „EKR schody przekrój” (A. Krzak). Jednostki: cm.</p>
+  <p class="hint">LPM – obrót · PPM – przesuw · kółko – zoom</p>
+
+  <h2>Widok</h2>
+  <div class="views">
+    <button data-view="iso">3D</button>
+    <button data-view="plan">Rzut</button>
+    <button data-view="section">Przekrój</button>
+    <button data-view="under">Pod biegiem</button>
+  </div>
+
+  <h2>Warstwy</h2>
+  <div id="layers"></div>
+
+  <h2>Cięcie modelu (płaszczyzna X)</h2>
+  <div class="row"><input type="range" id="cut" min="-40" max="240" step="1" value="240"><output id="cutOut">wył.</output></div>
+  <p class="hint">X = 0 lico ściany zewn., 90 = krawędź biegu / zabudowa g-k. Np. X≈45 pokazuje przekrój przez środek biegu.</p>
+
+  <h2>Parametry</h2>
+  <div id="params"></div>
+  <div class="row" style="grid-template-columns:1fr"><select id="block">
+    <option value="bloczek">bloczek betonowy 38×24×12</option>
+    <option value="zalewowy">pustak zalewowy 50×24×24 (+ beton)</option>
+    <option value="pustak">pustak ceramiczny 25 P+W 37,3×25×23,8</option>
+  </select></div>
+  <label class="chk"><input type="checkbox" id="dno" checked> kaseta stopnia zamknięta dnem</label>
+
+  <h2>Zestawienie (szacunkowe)</h2>
+  <div id="stats"></div>
+  <p style="margin-top:10px"><button class="primary" id="openSheet">Stopnice i czoła – szkic do wyceny</button></p>
+
+  <h2>Uwagi do konstruktora</h2>
+  <ul id="notes"></ul>
+</aside>
+<div id="app"></div>
+<div id="labels"></div>
+<section id="sheet" hidden>
+  <div class="bar">
+    <div>
+      <h1>Schody EKR – stopnice i czoła do wyceny</h1>
+      <p class="meta" id="sheetMeta"></p>
+    </div>
+    <div class="actions"><button id="printSheet">Drukuj / PDF</button><button id="closeSheet">Zamknij ✕</button></div>
+  </div>
+  <h2>Stopnice drewniane – kształty netto (widok z góry)</h2>
+  <div class="treads" id="sheetTreads"></div>
+  <h2>Czoła stalowe (ślusarz) – stopnie 9–21</h2>
+  <div class="tbl-wrap"><table id="sheetSteel"></table></div>
+  <h2>Podstopnice wykończeniowe – stopnie murowane 1–8</h2>
+  <div class="tbl-wrap"><table id="sheetRisers"></table></div>
+</section>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
+
+// ─────────────────────────────────────────────────────────────
+// Dane z rysunków
+// ─────────────────────────────────────────────────────────────
+const HTOT = 382;            // różnica poziomów ±0,00 → +3,82
+const NRISE = 21;            // liczba podniesień
+const H = HTOT / NRISE;      // ≈ 18,19
+const G = 24;                // głębokość konstrukcyjna stopnia
+const SLAB_BOT = 362, SLAB_TOP = 382, CEIL = 382 + 269;
+const GK_X0 = 90, GK_X1 = 95, GK_MID = 92.5;          // zabudowa g-k przy biegu
+const NICHE = { y0: 121, y1: 221, h: 120 };           // legowisko: 100 × 120 (199 / 100 / 31 od przekroju)
+
+const P = { tt: 4, nos: 2.5, cz: 15.5, T: 1.2, D: 22, plate: 0.4, gap: 1.5, dno: true, block: 'bloczek' };
+const PARAMS = [
+  ['tt',  'grubość stopnicy drewnianej', 2.5, 5, 0.5],
+  ['nos', 'wysunięcie stopnicy (nosek)', 0, 4, 0.5],
+  ['cz',  'wysokość czoła stalowego', 8, 18, 0.5],
+  ['T',   'grubość blachy policzka', 0.8, 2, 0.2],
+  ['D',   'wysokość „talii” policzka', 12, 35, 1],
+  ['gap', 'odsunięcie od ściany zewn.', 0.5, 5, 0.5],
+];
+const BLOCKS = {
+  bloczek:  { h: 12,   l: 38,   w: 24, name: 'bloczek betonowy 38×24×12' },
+  zalewowy: { h: 24,   l: 50,   w: 24, name: 'pustak zalewowy 50×24×24' },
+  pustak:   { h: 23.8, l: 37.3, w: 25, name: 'pustak ceramiczny 25 P+W' },
+};
+
+// Stopnie w rzucie (x: od lica ściany zewn., y: od początku zabiegu dolnego – wg rzutu)
+function stepsData() {
+  const S = [];
+  for (let k = 1; k <= 5; k++) {
+    const xa = 210 - 24 * k, xb = xa + 24;
+    S.push({ n: k, type: 'm', poly: [[xa, 0], [xb, 0], [xb, 90], [xa, 90]], front: [[xb, 0], [xb, 90]] });
+  }
+  S.push({ n: 6, type: 'm', poly: [[90, 0], [90, 90], [34.5, 0]], front: [[90, 0], [90, 90]] });
+  S.push({ n: 7, type: 'm', poly: [[0, 0], [34.5, 0], [90, 90], [0, 40]], front: [[34.5, 0], [90, 90]] });
+  S.push({ n: 8, type: 'm', poly: [[0, 40], [90, 90], [0, 90]], front: [[0, 40], [90, 90]] });
+  for (let k = 9; k <= 18; k++) {
+    const ya = 90 + 24 * (k - 9), yb = ya + 24;
+    S.push({ n: k, type: 's', rect: true, poly: [[0, ya], [GK_MID, ya], [GK_MID, yb], [0, yb]], front: [[0, ya], [GK_MID, ya]], ya, yb });
+  }
+  S.push({ n: 19, type: 's', poly: [[0, 330], [90, 330], [0, 380]], front: [[0, 330], [90, 330]] });
+  S.push({ n: 20, type: 's', poly: [[0, 380], [90, 330], [34.5, 420], [0, 420]], front: [[0, 380], [90, 330]] });
+  S.push({ n: 21, type: 's', landing: true, poly: [[90, 330], [90, 420], [34.5, 420]], front: [[90, 330], [34.5, 420]] });
+  return S;
+}
+
+// ─────────────────────────────────────────────────────────────
+// Geometria 2D
+// ─────────────────────────────────────────────────────────────
+const V = (x, y, z) => new THREE.Vector3(x, z, y);   // rzut (x,y) + wysokość z → three
+const fmt = v => (Math.round(v * 10) / 10).toString().replace('.', ',');
+
+function clipHalf(poly, f) {
+  const out = [];
+  for (let i = 0; i < poly.length; i++) {
+    const a = poly[i], b = poly[(i + 1) % poly.length], fa = f(a), fb = f(b);
+    if (fa >= 0) out.push(a);
+    if ((fa >= 0) !== (fb >= 0)) { const t = fa / (fa - fb); out.push([a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t]); }
+  }
+  return out.filter((p, i, arr) => { const q = arr[(i + 1) % arr.length]; return Math.hypot(p[0] - q[0], p[1] - q[1]) > 1e-6; });
+}
+function boxFns(b) {
+  const f = [];
+  if (b.x0 != null) f.push(q => q[0] - b.x0);
+  if (b.x1 != null) f.push(q => b.x1 - q[0]);
+  if (b.y0 != null) f.push(q => q[1] - b.y0);
+  if (b.y1 != null) f.push(q => b.y1 - q[1]);
+  return f;
+}
+const clipBox = (poly, b) => boxFns(b).reduce((p, f) => clipHalf(p, f), poly);
+function clipSeg(a, b, box) {
+  let t0 = 0, t1 = 1;
+  for (const f of boxFns(box)) {
+    const fa = f(a), fb = f(b);
+    if (fa < 0 && fb < 0) return null;
+    if (fa < 0) t0 = Math.max(t0, fa / (fa - fb));
+    if (fb < 0) t1 = Math.min(t1, fa / (fa - fb));
+  }
+  const L = t => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t];
+  return t1 > t0 ? [L(t0), L(t1)] : null;
+}
+const area = poly => Math.abs(poly.reduce((s, p, i) => { const q = poly[(i + 1) % poly.length]; return s + p[0] * q[1] - q[0] * p[1]; }, 0)) / 2;
+const centroid = poly => poly.reduce((c, p) => [c[0] + p[0] / poly.length, c[1] + p[1] / poly.length], [0, 0]);
+function strip(a, b, w, ref) {   // pas o szerokości w wzdłuż odcinka a-b, w stronę punktu ref
+  const dx = b[0] - a[0], dy = b[1] - a[1], L = Math.hypot(dx, dy);
+  let n = [-dy / L, dx / L];
+  if ((ref[0] - a[0]) * n[0] + (ref[1] - a[1]) * n[1] < 0) n = [-n[0], -n[1]];
+  return [a, b, [b[0] + n[0] * w, b[1] + n[1] * w], [a[0] + n[0] * w, a[1] + n[1] * w]];
+}
+function frontNormal(poly, [a, b]) {   // normalna krawędzi czołowej skierowana na zewnątrz stopnia
+  const c = centroid(poly), dx = b[0] - a[0], dy = b[1] - a[1], L = Math.hypot(dx, dy);
+  const n = [-dy / L, dx / L];
+  return (c[0] - a[0]) * n[0] + (c[1] - a[1]) * n[1] > 0 ? [-n[0], -n[1]] : n;
+}
+function lineX(p1, p2, p3, p4) {        // przecięcie prostych p1p2 i p3p4 (null gdy równoległe)
+  const d = (p1[0] - p2[0]) * (p3[1] - p4[1]) - (p1[1] - p2[1]) * (p3[0] - p4[0]);
+  if (Math.abs(d) < 1e-9) return null;
+  const a = p1[0] * p2[1] - p1[1] * p2[0], b = p3[0] * p4[1] - p3[1] * p4[0];
+  return [(a * (p3[0] - p4[0]) - (p1[0] - p2[0]) * b) / d, (a * (p3[1] - p4[1]) - (p1[1] - p2[1]) * b) / d];
+}
+// przesunięcie krawędzi czołowej na zewnątrz (nosek); sąsiednie krawędzie wydłużane po swoich prostych
+function offsetFront(poly, front, d) {
+  const n = frontNormal(poly, front), N = poly.length;
+  const same = (p, q) => Math.hypot(p[0] - q[0], p[1] - q[1]) < 1e-6;
+  const i = poly.findIndex((p, k) => { const q = poly[(k + 1) % N]; return (same(p, front[0]) && same(q, front[1])) || (same(p, front[1]) && same(q, front[0])); });
+  const a = poly[i], b = poly[(i + 1) % N], prev = poly[(i - 1 + N) % N], next = poly[(i + 2) % N];
+  const a1 = [a[0] + n[0] * d, a[1] + n[1] * d], b1 = [b[0] + n[0] * d, b[1] + n[1] * d];
+  const out = poly.slice();
+  out[i] = lineX(a1, b1, prev, a) || a1;
+  out[(i + 1) % N] = lineX(a1, b1, b, next) || b1;
+  return out;
+}
+const lineDist = (p, a, b) => Math.abs((b[0] - a[0]) * (a[1] - p[1]) - (a[0] - p[0]) * (b[1] - a[1])) / Math.hypot(b[0] - a[0], b[1] - a[1]);
+
+// ─────────────────────────────────────────────────────────────
+// Scena
+// ─────────────────────────────────────────────────────────────
+const app = document.getElementById('app');
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.localClippingEnabled = true;
+app.appendChild(renderer.domElement);
+const labelRenderer = new CSS2DRenderer({ element: document.getElementById('labels') });
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0xeef0f2);
+const camera = new THREE.PerspectiveCamera(40, 1, 5, 20000);
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+
+scene.add(new THREE.HemisphereLight(0xffffff, 0xb9b3a8, 1.6));
+const sun = new THREE.DirectionalLight(0xffffff, 1.8);
+sun.position.copy(V(450, -250, 800));
+sun.target.position.copy(V(80, 210, 150));
+sun.castShadow = true;
+sun.shadow.mapSize.set(2048, 2048);
+Object.assign(sun.shadow.camera, { left: -450, right: 450, top: 450, bottom: -450, near: 10, far: 2500 });
+sun.shadow.bias = -0.0005;
+scene.add(sun, sun.target);
+
+const floor = new THREE.Mesh(new THREE.PlaneGeometry(900, 900), new THREE.MeshStandardMaterial({ color: 0xe4e1da, roughness: 1 }));
+floor.rotation.x = -Math.PI / 2; floor.position.copy(V(150, 200, -0.05)); floor.receiveShadow = true;
+scene.add(floor);
+const grid = new THREE.GridHelper(900, 90, 0xc9c5bc, 0xd8d4cc);
+grid.position.copy(V(150, 200, 0)); scene.add(grid);
+
+const clipPlane = new THREE.Plane(new THREE.Vector3(-1, 0, 0), 1e5);
+const mat = (color, o = {}) => new THREE.MeshStandardMaterial({ color, roughness: 0.8, metalness: 0, clippingPlanes: [clipPlane], side: THREE.DoubleSide, ...o });
+const M = {
+  masonry: mat(0x9d9b95, { roughness: 1 }),
+  screed:  mat(0xc4c1b9, { roughness: 1 }),
+  wood:    mat(0xc79a62, { roughness: 0.6 }),
+  steel:   mat(0x3b4048, { metalness: 0.5, roughness: 0.45 }),
+  kaseta:  mat(0x59616c, { metalness: 0.5, roughness: 0.45 }),
+  frame:   mat(0x7d8793, { metalness: 0.5, roughness: 0.45 }),
+  support: mat(0xb5532f, { metalness: 0.3, roughness: 0.55 }),
+  plate:   mat(0x2f9e44, { metalness: 0.4, roughness: 0.5 }),
+  gk:      mat(0xf4f6fa, { transparent: true, opacity: 0.28, depthWrite: false }),
+  gkWall:  mat(0x7bc47f, { transparent: true, opacity: 0.25, depthWrite: false }),
+  fronts:  mat(0x3d8fe0, { transparent: true, opacity: 0.35, depthWrite: false }),
+  wall:    mat(0xcfc9bd, { transparent: true, opacity: 0.3, depthWrite: false }),
+  slab:    mat(0x9aa7b8, { transparent: true, opacity: 0.35, depthWrite: false }),
+  rail:    mat(0xf5f0e0, { emissive: 0xffe9a8, emissiveIntensity: 0.9 }),
+};
+const EDGE = new THREE.LineBasicMaterial({ color: 0x1d2126, transparent: true, opacity: 0.35, clippingPlanes: [clipPlane] });
+const EDGE_LIGHT = new THREE.LineBasicMaterial({ color: 0x5a6470, transparent: true, opacity: 0.25, clippingPlanes: [clipPlane] });
+const DIM = new THREE.LineBasicMaterial({ color: 0xd9480f, depthTest: false, transparent: true });
+const DIM_RED = new THREE.LineBasicMaterial({ color: 0xc92a2a, depthTest: false, transparent: true });
+const NICHE_LINE = new THREE.LineDashedMaterial({ color: 0x1971c2, dashSize: 4, gapSize: 3, clippingPlanes: [clipPlane] });
+
+// ─────────────────────────────────────────────────────────────
+// Warstwy
+// ─────────────────────────────────────────────────────────────
+const LAYERS = [
+  ['masonry', 'stopnie 1–8: mur z bloczków', 0x9d9b95, true],
+  ['fronts',  'okładzina / fronty meblowe (opcja)', 0x3d8fe0, false],
+  ['treads',  'stopnice drewniane', 0xc79a62, true],
+  ['stringers', 'policzki stalowe (blacha)', 0x3b4048, true],
+  ['kasety',  'kasety stopni: czoło + dno', 0x59616c, true],
+  ['frames',  'podpory trepów (L40×40×4)', 0x7d8793, true],
+  ['supports', 'słupy / belki / blachy kotwiące', 0xb5532f, true],
+  ['gk',      'zabudowa g-k + ścianka h=110', 0xdfe4ec, true],
+  ['slab',    'strop antresoli (orientacyjnie)', 0x9aa7b8, true],
+  ['walls',   'ściany zewnętrzne', 0xcfc9bd, true],
+  ['rail',    'pochwyt wpuszczany + LED', 0xffe9a8, true],
+  ['niche',   'legowisko dla psa', 0x1971c2, true],
+  ['dims',    'wymiary', 0xd9480f, true],
+  ['stepno',  'numery stopni', 0x1d2126, true],
+  ['parts',   'opisy elementów', 0x1d2126, false],
+];
+const layerState = Object.fromEntries(LAYERS.map(l => [l[0], l[3]]));
+let root = null, groups = {};
+const grp = name => groups[name] || (groups[name] = Object.assign(new THREE.Group(), { name }), root.add(groups[name]), groups[name]);
+
+function addMesh(g, geo, material, edgeMat) {
+  const m = new THREE.Mesh(geo, material);
+  m.castShadow = !material.transparent; m.receiveShadow = !material.transparent;
+  g.add(m);
+  if (edgeMat !== null) g.add(new THREE.LineSegments(new THREE.EdgesGeometry(geo, 25), edgeMat || (material.transparent ? EDGE_LIGHT : EDGE)));
+  return m;
+}
+// pryzmat: wielokąt w rzucie, wysokość z0..z1
+function prism(g, poly, z0, z1, material, edgeMat) {
+  if (!poly || poly.length < 3 || z1 - z0 < 0.01) return 0;
+  const geo = new THREE.ExtrudeGeometry(new THREE.Shape(poly.map(p => new THREE.Vector2(p[0], p[1]))), { depth: z1 - z0, bevelEnabled: false });
+  geo.rotateX(Math.PI / 2); geo.translate(0, z1, 0);
+  addMesh(g, geo, material, edgeMat);
+  return area(poly) * (z1 - z0);
+}
+// pryzmat: wielokąt w przekroju (y, z), grubość x0..x1
+function prismYZ(g, poly, x0, x1, material) {
+  const geo = new THREE.ExtrudeGeometry(new THREE.Shape(poly.map(p => new THREE.Vector2(p[0], p[1]))), { depth: x1 - x0, bevelEnabled: false });
+  geo.rotateY(-Math.PI / 2); geo.translate(x1, 0, 0);
+  addMesh(g, geo, material);
+  return area(poly) * (x1 - x0);
+}
+const box = (g, x0, x1, y0, y1, z0, z1, material, edgeMat) => prism(g, [[x0, y0], [x1, y0], [x1, y1], [x0, y1]], z0, z1, material, edgeMat);
+
+function label(g, pos, text, cls) {
+  const el = document.createElement('div'); el.className = cls; el.textContent = text;
+  const o = new CSS2DObject(el); o.position.copy(pos); g.add(o); return o;
+}
+function line(g, pts, material) {
+  const l = new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), material);
+  l.renderOrder = 10; g.add(l); return l;
+}
+// wymiar: a, b = [x, y, z] w układzie rzutu; tick = kierunek kreski
+function dim(a, b, text, tick = [0, 0, 3], red = false, lblOffset = [0, 0, 0]) {
+  const g = grp('dims'), m = red ? DIM_RED : DIM;
+  const pa = V(...a), pb = V(...b), t = V(...tick);
+  line(g, [pa, pb], m);
+  for (const p of [pa, pb]) line(g, [p.clone().sub(t), p.clone().add(t)], m);
+  const mid = pa.clone().add(pb).multiplyScalar(0.5).add(V(...lblOffset));
+  label(g, mid, text, red ? 'dim red' : 'dim');
+}
+function chain(marks, toPt, tick, labels) {
+  for (let i = 0; i < marks.length - 1; i++)
+    dim(toPt(marks[i]), toPt(marks[i + 1]), labels ? labels[i] : fmt(marks[i + 1] - marks[i]), tick);
+}
+
+// ─────────────────────────────────────────────────────────────
+// Budowa modelu
+// ─────────────────────────────────────────────────────────────
+let stats;
+function build() {
+  if (root) {
+    root.traverse(o => { if (o.isCSS2DObject) o.element.remove(); if (o.geometry) o.geometry.dispose(); });
+    scene.remove(root);
+  }
+  root = new THREE.Group(); groups = {}; scene.add(root);
+  stats = { masonry: 0, screed: 0, stringer: 0, kaseta: 0, frame: 0, plates: 0, posts: [], nKaseta: 0, treads: [], steelFronts: [], risers: [] };
+  const steps = stepsData();
+  const blk = BLOCKS[P.block];
+  const top = n => (n === 21 ? HTOT : n * H);          // poziom wierzchu stopnicy
+
+  // — Stopnie 1–8: mur ————————————————————————————————————————
+  const gm = grp('masonry');
+  for (const s of steps.filter(s => s.type === 'm')) {
+    const poly = clipBox(s.poly, { x0: 1 });           // 1 cm dylatacji od ściany zewn.
+    const zt = top(s.n) - P.tt;
+    for (let z = 0; z < zt - 0.01; z += blk.h) {
+      const z1 = Math.min(z + blk.h, zt), partial = z1 - z < blk.h - 0.01;
+      const v = prism(gm, poly, z, z1, partial ? M.screed : M.masonry);
+      if (partial) stats.screed += v; else stats.masonry += v;
+    }
+  }
+  // fronty / okładzina na licach masywu
+  const gf = grp('fronts');
+  for (const s of steps.filter(s => s.type === 'm')) {
+    const zt = top(s.n) - P.tt, poly = s.poly;
+    poly.forEach((p, i) => {
+      const q = poly[(i + 1) % poly.length];
+      if (Math.abs(p[1]) < 1e-6 && Math.abs(q[1]) < 1e-6) box(gf, Math.min(p[0], q[0]), Math.max(p[0], q[0]), -1.8, 0, 0, zt, M.fronts);
+    });
+  }
+  box(gf, 210, 211.8, 0, 90, 0, top(1) - P.tt, M.fronts);
+
+  // — Stopnice drewniane ————————————————————————————————————————
+  const gt = grp('treads');
+  for (const s of steps) {
+    const b = s.type === 'm' ? { x0: 0.5, x1: 215, y0: -P.nos, y1: 90 } : { x0: 0.5, x1: GK_X0, y0: 80, y1: 419.5 };
+    const poly = clipBox(offsetFront(s.poly, s.front, P.nos), b);
+    prism(gt, poly, top(s.n) - P.tt, top(s.n), M.wood);
+    const n = frontNormal(s.poly, s.front);
+    stats.treads.push({ n: s.n, poly, front: s.front.map(p => [p[0] + n[0] * P.nos, p[1] + n[1] * P.nos]) });
+    if (s.type === 'm') {
+      const seg = clipSeg(s.front[0], s.front[1], { x0: 0.5 });
+      stats.risers.push({ n: s.n, len: Math.hypot(seg[1][0] - seg[0][0], seg[1][1] - seg[0][1]) });
+    }
+    const c = centroid(poly);
+    label(grp('stepno'), V(c[0], c[1], top(s.n) + 1), s.n === 21 ? '21 · +3,82' : String(s.n), 'stepno');
+  }
+
+  // — Kasety stopni 9–21: czoło + dno + podpory trepu ——————————————
+  const K = { x0: P.gap + P.T, x1: GK_MID - P.T / 2, y0: 80, y1: 419 };
+  const gk = grp('kasety'), gfr = grp('frames');
+  for (const s of steps.filter(s => s.type === 's')) {
+    const poly = clipBox(s.poly, K), c = centroid(poly);
+    const zt = top(s.n) - P.tt, zb = zt - P.cz;
+    const fs = clipSeg(s.front[0], s.front[1], K);
+    if (fs) stats.kaseta += prism(gk, strip(fs[0], fs[1], P.plate, c), zb, zt, M.kaseta);        // czoło stopnia
+    if (fs) stats.steelFronts.push({ n: s.n, len: Math.hypot(fs[1][0] - fs[0][0], fs[1][1] - fs[0][1]) });
+    if (P.dno) stats.kaseta += prism(gk, poly, zb, zb + P.plate, M.kaseta);                      // dno kasety
+    stats.nKaseta++;
+    // rama z kątowników L40×40×4 pod stopnicą (bez krawędzi czołowej – tam jest czoło)
+    poly.forEach((p, i) => {
+      const q = poly[(i + 1) % poly.length];
+      if (lineDist(p, ...s.front) < 0.05 && lineDist(q, ...s.front) < 0.05) return;
+      stats.frame += prism(gfr, strip(p, q, 4, c), zt - P.plate, zt, M.frame);
+      stats.frame += prism(gfr, strip(p, q, P.plate, c), zt - 4, zt, M.frame);
+    });
+    if (s.rect) {   // żebro środkowe pod trepem (płaskownik 40×5)
+      stats.frame += prism(gfr, strip([46.25, s.ya + P.plate], [46.25, s.yb - 4], 0.5, [50, s.ya]), zt - 4, zt, M.frame);
+    }
+  }
+
+  // — Policzki (blacha zębata) ————————————————————————————————————
+  const gs = grp('stringers');
+  const B1z1 = top(20) - P.tt - P.cz, B1z0 = B1z1 - 16;           // belka B1 pod stopniem 20
+  const B2z1 = top(21) - P.tt - P.cz, B2z0 = B2z1 - 16;           // belka B2 pod wejściem na antresolę
+  const segsStraight = []; for (let k = 9; k <= 18; k++) { const ya = 90 + 24 * (k - 9); segsStraight.push([ya, ya + 24, k]); }
+  const segsWall = [...segsStraight, [330, 380, 19], [380, 409, 20]];
+  function stringerPoly(segs, zEndLow) {
+    const k0 = segs[0][2], topE = [[segs[0][0], (k0 - 1) * H - P.tt]], bot = [];
+    for (const [ya, yb, k] of segs) { topE.push([ya, k * H - P.tt], [yb, k * H - P.tt]); bot.push([ya, (k - 1) * H - P.tt - P.D]); }
+    const last = segs[segs.length - 1];
+    const zl = zEndLow ?? (last[2] - 1) * H - P.tt - P.D + (last[1] - last[0]) * H / G;
+    return [...topE, [last[1], zl], ...bot.reverse()];
+  }
+  const wallPoly = stringerPoly(segsWall, B1z0), innerPoly = stringerPoly(segsStraight);
+  stats.stringer += prismYZ(gs, wallPoly, P.gap, P.gap + P.T, M.steel);
+  stats.stringer += prismYZ(gs, innerPoly, GK_MID - P.T / 2, GK_MID + P.T / 2, M.steel);
+  const innerBottomAt = y => 8 * H - P.tt - P.D + (y - 90) * H / G;
+
+  // — Podpory: słupy, belki, blachy kotwiące ————————————————————————
+  const gp = grp('supports');
+  const zFoot = 8 * H - P.tt;
+  stats.plates += box(gp, P.gap, P.gap + 12, 90, 91, zFoot - P.D - 3, zFoot, M.plate);           // blacha czołowa → mur
+  const posts = [
+    ['P0', GK_X0, GK_X1, 90, 100, 0, innerBottomAt(90)],
+    ['P1', GK_X0, GK_X1, 330, 340, 0, B2z0],
+    ['P2', GK_X0, GK_X1, 409, 419, 0, B2z0],
+    ['P3', P.gap, P.gap + 5, 409, 419, 0, B1z0],
+    ['B1', P.gap, GK_X0, 409, 419, B1z0, B1z1],
+    ['B2', GK_X0, GK_X1, 330, 419, B2z0, B2z1],
+  ];
+  for (const [n, x0, x1, y0, y1, z0, z1] of posts) {
+    box(gp, x0, x1, y0, y1, z0, z1, M.support);
+    const len = n[0] === 'P' ? z1 - z0 : Math.max(x1 - x0, y1 - y0);
+    stats.posts.push([n, len]);
+  }
+  for (const [x, y] of [[92.5, 95], [92.5, 335], [92.5, 414], [P.gap + 2.5, 414]]) stats.plates += box(gp, x - 7.5, x + 7.5, y - 7.5, y + 7.5, 0, 1, M.plate); // stopy słupów
+
+  // — Zabudowa g-k (z otworem na legowisko) + ścianka h=110 na antresoli ——
+  const gg = grp('gk');
+  box(gg, GK_X0, GK_X1, 90, NICHE.y0, 0, SLAB_BOT, M.gk);
+  box(gg, GK_X0, GK_X1, NICHE.y0, NICHE.y1, NICHE.h, SLAB_BOT, M.gk);
+  box(gg, GK_X0, GK_X1, NICHE.y1, 420, 0, SLAB_BOT, M.gk);
+  box(gg, GK_X0, GK_X1, 90, 330, SLAB_TOP, SLAB_TOP + 110, M.gkWall);
+
+  // — Strop antresoli (orientacyjnie) ——————————————————————————————
+  const gsl = grp('slab');
+  box(gsl, GK_X1, 330, -60, 420, SLAB_BOT, SLAB_TOP, M.slab);
+  label(gsl, V(200, 380, SLAB_TOP + 2), '+3,82 antresola', 'stepno');
+  label(gsl, V(200, 150, 1), '±0,00', 'stepno');
+
+  // — Ściany zewnętrzne ——————————————————————————————————————————
+  const gw = grp('walls');
+  box(gw, -35, 0, -60, 455, 0, CEIL, M.wall);
+  box(gw, 0, 130, 420, 455, 0, CEIL, M.wall);
+
+  // — Pochwyt wpuszczany w ścianę (0,9 m nad linią nosków) ——————————
+  const railPts = [[0, 7], [40, 8], ...segsStraight.map(([ya, , k]) => [ya, k]), [330, 19], [380, 20], [412, 21]]
+    .map(([y, k]) => V(-2.5, y, 90 + k * H));
+  const rail = new THREE.TubeGeometry(new THREE.CatmullRomCurve3(railPts, false, 'centripetal'), 120, 1.6, 10, false);
+  addMesh(grp('rail'), rail, M.rail, null);
+
+  // — Legowisko dla psa ——————————————————————————————————————————
+  const gn = grp('niche');
+  const ng = new THREE.EdgesGeometry(new THREE.BoxGeometry(GK_X0 - 5, NICHE.h, NICHE.y1 - NICHE.y0));
+  const nl = new THREE.LineSegments(ng, NICHE_LINE); nl.computeLineDistances();
+  nl.position.copy(V((GK_X0 + 5) / 2, (NICHE.y0 + NICHE.y1) / 2, NICHE.h / 2)); gn.add(nl);
+  label(gn, V(45, (NICHE.y0 + NICHE.y1) / 2, NICHE.h / 2), 'legowisko dla psa 100×120', 'stepno');
+
+  // — Opisy elementów ——————————————————————————————————————————
+  const gl = grp('parts');
+  label(gl, V(P.gap, 250, 16 * H - 30), 'policzek przyścienny (blacha zębata)', 'part');
+  label(gl, V(GK_MID, 200, 13 * H - 35), 'policzek wewn. – w zabudowie g-k', 'part');
+  label(gl, V(46, 234, 15 * H - P.tt - P.cz / 2), 'kaseta: czoło + dno + L40×40×4', 'part');
+  label(gl, V(P.gap + 6, 90, zFoot - 15), 'blacha czołowa + kotwy w mur', 'part');
+  for (const [n, x0, x1, y0, y1, z0, z1] of posts) label(gl, V((x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2), n, 'part');
+  label(gl, V(150, 45, 60), 'masyw z bloczków + wieniec na górze', 'part');
+
+  // — Wymiary ——————————————————————————————————————————————————
+  chain([0, 34.5, 90, 114, 138, 162, 186, 210], x => [x, -22, 0]);
+  dim([0, -40, 0], [210, -40, 0], '210');
+  chain([0, 40, 90, ...segsStraight.map(s => s[1]), 380, 420], y => [-55, y, 0], [3, 0, 0]);
+  dim([-75, 0, 0], [-75, 420, 0], '420', [3, 0, 0]);
+  chain([0, 34.5, 90], x => [x, 440, 0]);
+  dim([225, 0, 0], [225, 90, 0], '90', [3, 0, 0]);
+  dim([225, 90, 0], [225, 420, 0], '330', [3, 0, 0]);
+  dim([120, 418, 0], [120, 418, HTOT], `382 = 21 × ${fmt(H)}`, [3, 0, 0]);
+  dim([218, 2, 0], [218, 2, 8 * H], `${fmt(8 * H)} (8 podn.) – mur`, [3, 0, 0]);
+  dim([88, 186, 12 * H], [88, 186, 13 * H], `h ${fmt(H)}`, [3, 0, 0]);
+  dim([88, 186, 13 * H + 1.5], [88, 210, 13 * H + 1.5], 's 24', [0, 0, 2]);
+  dim([0.5, 258, 15 * H + 3], [90, 258, 15 * H + 3], '90', [0, 0, 2]);
+  dim([98, NICHE.y0, NICHE.h + 4], [98, NICHE.y1, NICHE.h + 4], '100', [0, 0, 2]);
+  dim([98, NICHE.y0 - 3, 0], [98, NICHE.y0 - 3, NICHE.h], '120', [2, 0, 0]);
+  dim([150, 300, SLAB_BOT], [150, 300, SLAB_TOP], '20', [3, 0, 0]);
+  // wysokości krytyczne z przekroju (od stopnicy 11 / 12 do +3,82)
+  dim([85, 150, 11 * H], [85, 150, HTOT], `${fmt(HTOT - 11 * H)} – zab. antresoli 140`, [2, 0, 0], true);
+  dim([85, 174, 12 * H], [85, 174, HTOT], `${fmt(HTOT - 12 * H)} – zab. antresoli 190`, [2, 0, 0], true, [0, 0, -30]);
+
+  stats.innerClearance = innerBottomAt(NICHE.y0) - NICHE.h;
+  applyLayers();
+  renderStats();
+  if (!sheetEl.hidden) renderSheet();
+}
+
+// CSS2DRenderer patrzy tylko na widoczność samej etykiety, nie rodzica
+function applyLayers() {
+  for (const [k, g] of Object.entries(groups)) {
+    g.visible = !!layerState[k];
+    g.traverse(o => { if (o.isCSS2DObject) o.visible = g.visible; });
+  }
+}
+
+// ─────────────────────────────────────────────────────────────
+// Panel
+// ─────────────────────────────────────────────────────────────
+const layersEl = document.getElementById('layers');
+for (const [k, name, color] of LAYERS) {
+  const l = document.createElement('label'); l.className = 'chk';
+  l.innerHTML = `<input type="checkbox" ${layerState[k] ? 'checked' : ''}><span class="sw" style="background:#${color.toString(16).padStart(6, '0')}"></span>${name}`;
+  l.querySelector('input').addEventListener('change', e => { layerState[k] = e.target.checked; applyLayers(); });
+  layersEl.appendChild(l);
+}
+const paramsEl = document.getElementById('params');
+for (const [k, name, min, max, step] of PARAMS) {
+  const d = document.createElement('div'); d.className = 'row';
+  d.innerHTML = `<label>${name}<br><input type="range" min="${min}" max="${max}" step="${step}" value="${P[k]}"></label><output>${fmt(P[k])} cm</output>`;
+  const inp = d.querySelector('input'), out = d.querySelector('output');
+  inp.addEventListener('input', () => { P[k] = +inp.value; out.textContent = `${fmt(P[k])} cm`; build(); });
+  paramsEl.appendChild(d);
+}
+document.getElementById('block').addEventListener('change', e => { P.block = e.target.value; build(); });
+document.getElementById('dno').addEventListener('change', e => { P.dno = e.target.checked; build(); });
+const cut = document.getElementById('cut'), cutOut = document.getElementById('cutOut');
+cut.addEventListener('input', () => {
+  const v = +cut.value, off = v >= 240;
+  clipPlane.constant = off ? 1e5 : v;
+  cutOut.textContent = off ? 'wył.' : `X ${v}`;
+});
+
+function renderStats() {
+  const blk = BLOCKS[P.block];
+  const nBlocks = Math.ceil(stats.masonry / (blk.l * blk.w * blk.h) * 1.1);
+  const kg = v => fmt(v * 7.85 / 1000);
+  const rule = 2 * H + G;
+  document.getElementById('stats').innerHTML = `
+  <table>
+    <tr><td>Podniesienie h (21 szt.)</td><td>${fmt(H)} cm</td></tr>
+    <tr><td>Stopień konstr. / efektywny</td><td>24 / ${fmt(24 + P.nos)} cm</td></tr>
+    <tr><td>2h + s</td><td class="${rule >= 60 && rule <= 65 ? 'ok' : 'warn'}">${fmt(rule)} cm</td></tr>
+    <tr><td>Mur stopni 1–8 (${blk.name})</td><td>${fmt(stats.masonry / 1e6)} m³</td></tr>
+    <tr><td>&nbsp;&nbsp;liczba elementów (+10%)</td><td>ok. ${nBlocks} szt.</td></tr>
+    <tr><td>&nbsp;&nbsp;wyrównanie / wieniec pod stopnicami</td><td>${fmt(stats.screed / 1e6 * 1000)} l</td></tr>
+    <tr><td>Policzki 2 × blacha ${fmt(P.T * 10)} mm</td><td>${kg(stats.stringer)} kg</td></tr>
+    <tr><td>Kasety (${stats.nKaseta} szt., blacha ${fmt(P.plate * 10)} mm)</td><td>${kg(stats.kaseta)} kg</td></tr>
+    <tr><td>Podpory trepów L40×40×4 + żebra</td><td>${kg(stats.frame)} kg</td></tr>
+    <tr><td>Słupy / belki RHS 100×50 (dł.)</td><td>${stats.posts.map(([n, l]) => `${n} ${fmt(l)}`).join('<br>')}</td></tr>
+    <tr><td>Prześwit: spód policzka nad legowiskiem</td><td class="${stats.innerClearance > 0 ? 'ok' : 'warn'}">${fmt(stats.innerClearance)} cm</td></tr>
+  </table>`;
+}
+
+document.getElementById('notes').innerHTML = [
+  'Konstrukcja nie dotyka ściany zewn.: policzek przyścienny odsunięty o <b>' + fmt(P.gap) + ' cm</b>, mur stopni 1–8 z dylatacją 1 cm. Pochwyt kotwiony w ścianę tylko jako element wykończenia.',
+  'Stopnie 1–8: masyw z bloczków na posadzce/stropie parteru. Górne warstwy pod stopnicami: wieniec żelbetowy lub pustaki zalewowe z rdzeniem – w miejscu blachy czołowej policzka potrzebny pełny beton pod kotwy chemiczne.',
+  'Policzek przyścienny opiera się blachą czołową na licu muru (y = 90) i końcem na belce B1; policzek wewnętrzny na słupie P0 i słupie P1.',
+  'Zabiegowe 19–20 i wejście 21: rama P1–P2–B2 (w zabudowie g-k) + belka B1 przy oknie ze słupem P3 – bez mocowania do ściany zewn. ani ściany okiennej.',
+  '<span class="warn">Zabudowa g-k na rysunku ma 5 cm – słupy/belki 50 mm + płyty g-k się nie zmieszczą. Realnie ≥ 8–10 cm albo słupy z płaskownika.</span>',
+  '<span class="warn">Wysokość w krytycznym miejscu (st. 11–12 → +3,82): 182 / 163,5 cm z przekroju – do weryfikacji z zabudową antresoli.</span>',
+  'Profile, grubości blach, spoiny i kotwienie – do zwymiarowania przez konstruktora. Model to koncepcja do rozmowy z wykonawcą.',
+].map(t => `<li>${t}</li>`).join('');
+
+// ─────────────────────────────────────────────────────────────
+// Arkusz do wyceny: stopnice (kształty netto) + czoła
+// ─────────────────────────────────────────────────────────────
+const sheetEl = document.getElementById('sheet');
+document.getElementById('openSheet').addEventListener('click', () => { renderSheet(); sheetEl.hidden = false; });
+document.getElementById('closeSheet').addEventListener('click', () => { sheetEl.hidden = true; });
+document.getElementById('printSheet').addEventListener('click', () => print());
+
+const numRange = ns => ns.length > 1 && ns[ns.length - 1] - ns[0] === ns.length - 1 ? `${ns[0]}–${ns[ns.length - 1]}` : ns.join(', ');
+function edgeTag(p, q) {
+  const near = (a, b) => Math.abs(a - b) < 0.05;
+  if (near(p[0], 0.5) && near(q[0], 0.5)) return 'ściana zewn.';
+  if (near(p[0], GK_X0) && near(q[0], GK_X0)) return 'zabudowa g-k';
+  if (near(p[1], 419.5) && near(q[1], 419.5)) return 'ściana okienna';
+  return '';
+}
+// obrót stopnicy tak, żeby krawędź czołowa leżała poziomo na dole (bez odbicia lustrzanego – widok z góry)
+function normTread(t) {
+  const P0 = t.poly, N = P0.length, onFront = p => lineDist(p, ...t.front) < 0.05;
+  const fi = P0.findIndex((p, i) => onFront(p) && onFront(P0[(i + 1) % N]));
+  const a = P0[fi], b = P0[(fi + 1) % N], ang = Math.atan2(b[1] - a[1], b[0] - a[0]);
+  const rot = A => P0.map(p => { const x = p[0] - a[0], y = p[1] - a[1]; return [x * Math.cos(A) - y * Math.sin(A), x * Math.sin(A) + y * Math.cos(A)]; });
+  let pts = rot(-ang);
+  if (centroid(pts)[1] > 0) pts = rot(Math.PI - ang);
+  const mx = Math.min(...pts.map(p => p[0])), my = Math.min(...pts.map(p => p[1]));
+  pts = pts.map(p => [p[0] - mx, p[1] - my]);
+  return { pts, fi, W: Math.max(...pts.map(p => p[0])), D: Math.max(...pts.map(p => p[1])) };
+}
+function treadSVG(t, { pts, fi, W, D }) {
+  const N = pts.length, c = centroid(pts), pad = 11;
+  let g = `<polygon points="${pts.map(p => p.map(v => v.toFixed(2)).join(',')).join(' ')}" fill="#f1dfc2" stroke="#1d2126" stroke-width="0.4" stroke-linejoin="round"/>`;
+  const a = pts[fi], b = pts[(fi + 1) % N];
+  g += `<line x1="${a[0]}" y1="${a[1]}" x2="${b[0]}" y2="${b[1]}" stroke="#d9480f" stroke-width="1.1"/>`;
+  pts.forEach((p, i) => {
+    const q = pts[(i + 1) % N], len = Math.hypot(q[0] - p[0], q[1] - p[1]);
+    const mx = (p[0] + q[0]) / 2, my = (p[1] + q[1]) / 2;
+    let nx = -(q[1] - p[1]) / len, ny = (q[0] - p[0]) / len;
+    if ((c[0] - mx) * nx + (c[1] - my) * ny > 0) { nx = -nx; ny = -ny; }
+    let r = Math.atan2(q[1] - p[1], q[0] - p[0]) * 180 / Math.PI;
+    if (r > 90) r -= 180; if (r < -90) r += 180;
+    const lx = mx + nx * 4, ly = my + ny * 4;
+    g += `<text x="${lx}" y="${ly}" text-anchor="middle" dominant-baseline="middle" transform="rotate(${r} ${lx} ${ly})">${fmt(len)}</text>`;
+    const tag = i === fi ? 'przód (nosek)' : edgeTag(t.poly[i], t.poly[(i + 1) % N]);
+    if (tag) { const tx = mx - nx * 3.5, ty = my - ny * 3.5; g += `<text class="tag" x="${tx}" y="${ty}" text-anchor="middle" dominant-baseline="middle" transform="rotate(${r} ${tx} ${ty})">${tag}</text>`; }
+  });
+  pts.forEach((p, i) => {
+    const pr = pts[(i - 1 + N) % N], nx = pts[(i + 1) % N];
+    const v1 = [pr[0] - p[0], pr[1] - p[1]], v2 = [nx[0] - p[0], nx[1] - p[1]];
+    const deg = Math.acos((v1[0] * v2[0] + v1[1] * v2[1]) / (Math.hypot(...v1) * Math.hypot(...v2))) * 180 / Math.PI;
+    if (Math.abs(deg - 90) < 0.3) return;
+    const dc = Math.hypot(c[0] - p[0], c[1] - p[1]), k = Math.min(9, dc * 0.45);
+    g += `<text class="ang" x="${p[0] + (c[0] - p[0]) / dc * k}" y="${p[1] + (c[1] - p[1]) / dc * k}" text-anchor="middle" dominant-baseline="middle">${fmt(deg)}°</text>`;
+  });
+  return `<svg viewBox="${-pad} ${-pad} ${W + 2 * pad} ${D + 2 * pad}" role="img" aria-label="stopnica ${t.n}">${g}</svg>`;
+}
+function renderSheet() {
+  // grupowanie identycznych stopnic
+  const groups = [];
+  for (const t of stats.treads) {
+    const nt = normTread(t), sig = nt.pts.map(p => p.map(v => v.toFixed(1)).join(',')).join(';');
+    const g = groups.find(g => g.sig === sig);
+    if (g) g.ns.push(t.n); else groups.push({ sig, t, nt, ns: [t.n] });
+  }
+  let totalArea = 0, count = 0;
+  document.getElementById('sheetTreads').innerHTML = groups.map(({ t, nt, ns }) => {
+    const A = area(nt.pts) / 1e4, kind = t.n === 21 ? 'wejście na antresolę (opcja)' : nt.pts.length === 4 && nt.pts.every((p, i) => {
+      const q = nt.pts[(i + 1) % 4]; return Math.abs(p[0] - q[0]) < 0.05 || Math.abs(p[1] - q[1]) < 0.05; }) ? 'prosta' : 'zabiegowa';
+    if (t.n !== 21) { totalArea += A * ns.length; count += ns.length; }
+    return `<div class="tread"><span class="qty">× ${ns.length}</span><h3>${ns.length > 1 ? 'Stopnie' : 'Stopień'} ${numRange(ns)}</h3>
+      <div class="info">${kind} · obrys ${fmt(nt.W)} × ${fmt(nt.D)} · formatka ≥ ${Math.ceil(nt.W + 2)} × ${Math.ceil(nt.D + 2)} · ${(Math.round(A * 1000) / 1000).toString().replace('.', ',')} m²/szt.</div>
+      ${treadSVG(t, nt)}</div>`;
+  }).join('');
+  document.getElementById('sheetMeta').innerHTML =
+    `Dąb lity, grubość <b>${fmt(P.tt)} cm</b>, nosek <b>${fmt(P.nos)} cm</b> na krawędzi czołowej (wliczony w wymiary). ` +
+    `Razem <b>${count} stopnic</b> (${fmt(totalArea)} m²) + opcjonalnie stopnica 21. Wymiary netto gotowych elementów w cm. ` +
+    `Kształty widziane z góry (bez odbicia), krawędź czołowa pomarańczowa na dole; kąty inne niż 90° na niebiesko. ` +
+    `Podniesienie ${fmt(H)} cm × 21. Wszystkie wymiary do weryfikacji na budowie przed cięciem.`;
+
+  const groupBy = (list, key) => list.reduce((acc, x) => { const g = acc.find(g => key(g.x) === key(x)); if (g) g.ns.push(x.n); else acc.push({ x, ns: [x.n] }); return acc; }, []);
+  const steel = groupBy(stats.steelFronts, x => x.len.toFixed(1));
+  document.getElementById('sheetSteel').innerHTML =
+    `<tr><th>Stopień</th><th>Szt.</th><th>Długość</th><th>Wysokość</th><th>Materiał</th><th>Uwagi</th></tr>` +
+    steel.map(({ x, ns }) => `<tr><td>${numRange(ns)}</td><td class="num">${ns.length}</td><td class="num">${fmt(x.len)}</td><td class="num">${fmt(P.cz)}</td><td>blacha ${fmt(P.plate * 10)} mm</td><td>${x.n === 21 ? 'krawędź skośna, wejście na antresolę' : x.n === 20 ? 'krawędź skośna zabiegowa' : x.n === 19 ? 'zabiegowy, do słupa P1' : 'między policzkami'}</td></tr>`).join('') +
+    `<tr><td><b>Razem</b></td><td class="num"><b>${stats.steelFronts.length}</b></td><td class="num">${fmt(stats.steelFronts.reduce((s, x) => s + x.len, 0))}</td><td></td><td></td><td>długość łączna</td></tr>`;
+  const risers = groupBy(stats.risers, x => x.len.toFixed(1));
+  const hVis = H - P.tt;
+  document.getElementById('sheetRisers').innerHTML =
+    `<tr><th>Stopień</th><th>Szt.</th><th>Długość</th><th>Wysokość</th><th>Uwagi</th></tr>` +
+    risers.map(({ x, ns }) => `<tr><td>${numRange(ns)}</td><td class="num">${ns.length}</td><td class="num">${fmt(x.len)}</td><td class="num">${fmt(hVis)}</td><td>${x.len > 91 ? 'krawędź skośna zabiegowa' : ''}</td></tr>`).join('') +
+    `<tr><td><b>Razem</b></td><td class="num"><b>${stats.risers.length}</b></td><td class="num">${fmt(stats.risers.reduce((s, x) => s + x.len, 0))}</td><td></td><td>grubość ≤ nosek (np. 2 cm), pod noskiem stopnicy</td></tr>`;
+}
+
+// ─────────────────────────────────────────────────────────────
+// Widoki
+// ─────────────────────────────────────────────────────────────
+const VIEWS = {
+  iso:     { pos: V(470, -170, 430), tgt: V(70, 210, 170), fov: 40 },
+  plan:    { pos: V(90, 211, 3200), tgt: V(90, 210, 0), fov: 11 },
+  section: { pos: V(3200, 205, 200), tgt: V(0, 205, 200), fov: 11 },
+  under:   { pos: V(260, 160, 40), tgt: V(40, 250, 230), fov: 55 },
+};
+let anim = null;
+function setView(name) {
+  const v = VIEWS[name];
+  anim = { t0: performance.now(), from: { pos: camera.position.clone(), tgt: controls.target.clone(), fov: camera.fov }, to: v };
+}
+document.querySelectorAll('[data-view]').forEach(b => b.addEventListener('click', () => setView(b.dataset.view)));
+camera.position.copy(VIEWS.iso.pos); controls.target.copy(VIEWS.iso.tgt);
+
+function resize() {
+  const w = app.clientWidth, h = app.clientHeight;
+  renderer.setSize(w, h); labelRenderer.setSize(w, h);
+  camera.aspect = w / h; camera.updateProjectionMatrix();
+}
+addEventListener('resize', resize);
+
+function tick(now) {
+  if (anim) {
+    const k = Math.min(1, (now - anim.t0) / 700), e = k < 0.5 ? 2 * k * k : 1 - (-2 * k + 2) ** 2 / 2;
+    camera.position.lerpVectors(anim.from.pos, anim.to.pos, e);
+    controls.target.lerpVectors(anim.from.tgt, anim.to.tgt, e);
+    camera.fov = anim.from.fov + (anim.to.fov - anim.from.fov) * e; camera.updateProjectionMatrix();
+    if (k === 1) anim = null;
+  }
+  controls.update();
+  renderer.render(scene, camera);
+  labelRenderer.render(scene, camera);
+  requestAnimationFrame(tick);
+}
+
+build();
+resize();
+requestAnimationFrame(tick);
+</script>
+</body>
+</html>

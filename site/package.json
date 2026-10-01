@@ -1,0 +1,13 @@
+{
+  "name": "lokietka-schody-site",
+  "private": true,
+  "type": "module",
+  "description": "Strona GitHub Pages ze schodami EKR budowana z plików vaulta",
+  "scripts": {
+    "build": "node build.mjs",
+    "preview": "node build.mjs && npx --yes serve ../_site"
+  },
+  "dependencies": {
+    "marked": "^18.0.0"
+  }
+}
