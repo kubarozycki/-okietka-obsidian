@@ -155,10 +155,13 @@ const GK_X0 = 90;                                     // lico zabudowy g-k od st
 const GK_MID = GK_X0 + 1.25;                          // zasięg stopni prostych w danych (do lica słupków)
 const SLAB_X0 = 95;                                   // krawędź stropu antresoli – orientacyjnie, do pomiaru
 const NICHE = { y0: 121, y1: 221, h: 120 };           // legowisko: 100 × 120 (199 / 100 / 31 od przekroju)
+const FIN = 2;                                        // warstwa wykończeniowa posadzki – wylewka anhydrytowa na −2
+const SILL = 6;                                       // podwaliny pod słupami: KVH 6×10 na płask
 
 // tt stopnica, nos nosek, ply sklejka pod stopnicą, rb podstopnica, gap odsunięcie od ściany zewn.,
-// D wysokość policzka BSH (szer. 8), gk płyta g-k, stud głębokość słupków ściany wewn.
-const P = { tt: 4, nos: 2.5, ply: 2.2, rb: 2, gap: 1.5, D: 28, gk: 1.25, stud: 10 };
+// D wysokość policzka BSH (szer. 8), gk płyta g-k, stud głębokość słupków ściany wewn.,
+// raft płyta OSB pod całymi schodami (2 × 22 mm na krzyż) leżąca na wylewce – bez kotwienia w wylewkę
+const P = { tt: 4, nos: 2.5, ply: 2.2, rb: 2, gap: 1.5, D: 28, gk: 1.25, stud: 10, raft: 4.4 };
 const PARAMS = [
   ['tt',  'grubość stopnicy dębowej', 3, 5, 0.5],
   ['nos', 'wysunięcie stopnicy (nosek)', 0, 4, 0.5],
@@ -301,6 +304,7 @@ const M = {
   rygiel:  mat(0x9a7a52, { roughness: 0.8 }),
   stud:    mat(0xe8d6ae, { roughness: 0.9 }),
   anchor:  mat(0xb5532f, { metalness: 0.2, roughness: 0.55 }),
+  raft:    mat(0xc9a86a, { roughness: 0.95 }),
   gk:      mat(0xf4f6fa, { transparent: true, opacity: 0.28, depthWrite: false }),
   gkWall:  mat(0x7bc47f, { transparent: true, opacity: 0.25, depthWrite: false }),
   fronts:  mat(0x3d8fe0, { transparent: true, opacity: 0.35, depthWrite: false }),
@@ -318,6 +322,7 @@ const NICHE_LINE = new THREE.LineDashedMaterial({ color: 0x1971c2, dashSize: 4, 
 // Warstwy
 // ─────────────────────────────────────────────────────────────
 const LAYERS = [
+  ['raft',      'płyta OSB 2×22 na wylewce + podwaliny', 0xc9a86a, true],
   ['frame',     'stopnie 1–9: ścianki szkieletowe', 0xe3cfa4, true],
   ['ply',       'sklejka 22 mm pod stopnicami', 0xd8c48c, true],
   ['fronts',    'fronty meblowe stopni 1–8 (opcja)', 0x3d8fe0, false],
@@ -449,6 +454,16 @@ function build() {
     if (name) piece(name, sec, len ?? Math.max(x1 - x0, y1 - y0), note);
   }
 
+  // — Płyta OSB na wylewce: rozkłada nacisk słupów i ścianek, mostkuje dylatacje ———
+  const RB = -FIN, RT = RB + P.raft, ZS = RT + SILL;    // spód / wierzch płyty, wierzch podwalin
+  const graft = grp('raft');
+  const raftParts = [[1, RM1, 90, 419], [1, 207.5, 0.5, 90]];   // pod biegiem + pod dolnym blokiem (schowana za frontami)
+  for (const [x0, x1, y0, y1] of raftParts) box(graft, x0, x1, y0, y1, RB, RT, M.raft);
+  stats.raft = raftParts.reduce((a, [x0, x1, y0, y1]) => a + (x1 - x0) * (y1 - y0), 0) / 1e4;
+  bx(graft, 'Podwalina pod słupami zewn.', 'KVH 6×10', PO0, PO1, 105, 419, RT, ZS, M.raft, undefined, 'na płask, przykręcona do płyty, przez tył niszy');
+  bx(graft, 'Podwalina pod słupami wewn.', 'KVH 6×10', PJ0, PJ1, 105, NICHE.y0, RT, ZS, M.raft, undefined, 'na płask, przerwana w wejściu do niszy');
+  bx(graft, 'Podwalina pod słupami wewn.', 'KVH 6×10', PJ0, PJ1, NICHE.y1, 419, RT, ZS, M.raft, undefined, 'na płask');
+
   // — Stopnie 1–8: ścianki szkieletowe pod krawędziami + sklejka ——————
   const gfr = grp('frame'), gpl = grp('ply'), W = 8;
   for (let k = 1; k <= 8; k++) {
@@ -465,14 +480,14 @@ function build() {
       const seg = isFront ? shiftSeg([p, q], P.rb, c) : [p, q];
       const poly = clipToPoly(strip(seg[0], seg[1], W, c), ply);
       if (poly.length < 3) return;
-      prism(gfr, poly, 0, zt, M.frame);
-      stats.walls.push({ n: k, kind: isFront ? 'pod podstopnicą' : 'boczna', len: spanAlong(poly, seg), h: zt });
+      prism(gfr, poly, RT, zt, M.frame);
+      stats.walls.push({ n: k, kind: isFront ? 'pod podstopnicą' : 'boczna', len: spanAlong(poly, seg), h: zt - RT });
     });
   }
   // S9 – ścianka pod podstopnicą 9: dźwiga tył sklejki 8 i stopy obu policzków
   const zF = bT(8) - P.ply;
-  box(gfr, OS0, ST0, 86, 96, 0, zF, M.frame);
-  stats.walls.push({ n: 9, kind: 'pod podstopnicą 9 + stopa policzków (gr. 10)', len: ST0 - OS0, h: zF, thick: true });
+  box(gfr, OS0, ST0, 86, 96, RT, zF, M.frame);
+  stats.walls.push({ n: 9, kind: 'pod podstopnicą 9 + stopa policzków (gr. 10)', len: ST0 - OS0, h: zF - RT, thick: true });
 
   // fronty meblowe na licu y = 0 (kubiki)
   const gf = grp('fronts');
@@ -561,7 +576,7 @@ function build() {
     ['N1', PJ0, PJ1, 330, 340, zb(330)], ['P2', PJ0, PJ1, 409, 419, zJ],
   ];
   for (const [n, x0, x1, y0, y1, z1] of posts)
-    bx(gp, `${n} – słup`, 'KVH 10×10', x0, x1, y0, y1, 0, z1, M.post, z1,
+    bx(gp, `${n} – słup`, 'KVH 10×10', x0, x1, y0, y1, ZS, z1, M.post, z1 - ZS,
        n[0] === 'O' || n === 'P3' ? 'wolnostojący, 1,5 cm od ściany zewn.' : 'skręcony ze słupkiem ściany');
 
   // — Rygle stężające: słup zewnętrzny ↔ słup wewnętrzny / ściana ————————
@@ -574,13 +589,13 @@ function build() {
 
   // — Ściana wewnętrzna: szkielet KVH 6×10 (podwalina, oczep, słupki) ——————
   const gw = grp('wall');
-  bx(gw, 'Ściana – podwalina', `KVH 6×${P.stud}`, ST0, ST1, 90, NICHE.y0, 0, 6, M.stud, undefined, 'na elastomerze');
-  bx(gw, 'Ściana – podwalina', `KVH 6×${P.stud}`, ST0, ST1, NICHE.y1, 419, 0, 6, M.stud, undefined, 'na elastomerze');
+  bx(gw, 'Ściana – podwalina', `KVH 6×${P.stud}`, ST0, ST1, 90, NICHE.y0, RT, RT + 6, M.stud, undefined, 'przykręcona do płyty OSB');
+  bx(gw, 'Ściana – podwalina', `KVH 6×${P.stud}`, ST0, ST1, NICHE.y1, 419, RT, RT + 6, M.stud, undefined, 'przykręcona do płyty OSB');
   bx(gw, 'Ściana – oczep', `KVH 6×${P.stud}`, ST0, ST1, 90, 419, SLAB_BOT - 6, SLAB_BOT, M.stud, undefined, 'kotwiony do spodu stropu');
   for (const y of [90, 109, 227, 270, 324, 375, 413])
-    bx(gw, 'Ściana – słupek', `KVH 6×${P.stud}`, ST0, ST1, y, y + 6, 6, SLAB_BOT - 6, M.stud, SLAB_BOT - 12);
+    bx(gw, 'Ściana – słupek', `KVH 6×${P.stud}`, ST0, ST1, y, y + 6, RT + 6, SLAB_BOT - 6, M.stud, SLAB_BOT - 12 - RT);
   for (const y of [115, 221])
-    bx(gw, 'Ściana – słupek pod nadprożem', `KVH 6×${P.stud}`, ST0, ST1, y, y + 6, 6, NICHE.h, M.stud, NICHE.h - 6);
+    bx(gw, 'Ściana – słupek pod nadprożem', `KVH 6×${P.stud}`, ST0, ST1, y, y + 6, RT + 6, NICHE.h, M.stud, NICHE.h - 6 - RT);
   bx(gw, 'Ściana – nadproże nad niszą', `KVH ${P.stud}×20`, ST0, ST1, 115, 227, NICHE.h, NICHE.h + 20, M.stud, 112);
   bx(gw, 'Ściana – słupek nad nadprożem', `KVH 6×${P.stud}`, ST0, ST1, 168, 174, NICHE.h + 20, SLAB_BOT - 6, M.stud, SLAB_BOT - 6 - NICHE.h - 20);
 
@@ -629,6 +644,8 @@ function build() {
   label(gl, V(OS0, 260, zo(260) - 22), `PZ – policzek zewn. BSH 8×${P.D}`, 'part');
   label(gl, V(IS0, 190, zo(190) - 22), 'PW – policzek wewn. (przy ścianie)', 'part');
   label(gl, V(150, 45, 55), 'S1–S8: ścianki 45×45 + sklejka 18', 'part');
+  label(gl, V(50, 300, RT + 2), 'płyta OSB 2×22 na wylewce (bez kotew)', 'part');
+  label(gl, V(PO1, 160, ZS + 2), 'podwalina 6×10 pod słupami', 'part');
   label(gl, V(45, 91, zF - 25), 'S9 – stopa policzków', 'part');
   for (const [n, x0, x1, y0, y1, z1] of posts) label(gl, V((x0 + x1) / 2, (y0 + y1) / 2, z1 * 0.45), n, 'part');
   label(gl, V(92, 380, 370), 'L1 – kotwy w czoło stropu', 'part');
@@ -711,20 +728,22 @@ function quantities() {
   const kant = stats.walls.reduce((s, w) => s + wallTimber(w), 0) / 100;                  // mb kantówki
   const ply18 = stats.walls.reduce((s, w) => s + 2 * w.len * w.h, 0) / 1e4 + stats.nicheCeil; // m²
   const ply22 = stats.ply.reduce((s, p) => s + area(p.poly), 0) / 1e4;                    // m²
+  const osb = stats.raft * 2;                                                             // m² OSB 22 (2 warstwy)
   const oak = stats.treads.reduce((s, t) => s + area(t.poly), 0) / 1e4;                   // m² stopnic
   const ris = stats.risers.reduce((s, r) => s + r.len * r.h, 0) / 1e4;                    // m² podstopnic
   const kg = {
     timber: vol * 470 + kant * 0.045 * 0.045 * 470,
     ply: ply18 * 11.7 + ply22 * 14.3,
+    raft: osb * 0.022 * 620,
     oak: oak * P.tt / 100 * 720 + ris * P.rb / 100 * 720,
     gk: stats.gk * 9,
   };
-  return { bySec, vol, kant, ply18, ply22, oak, ris, kg };
+  return { bySec, vol, kant, ply18, ply22, osb, oak, ris, kg };
 }
 
 function renderStats() {
   const q = quantities(), rule = 2 * H + G;
-  const kgAll = q.kg.timber + q.kg.ply + q.kg.oak;
+  const kgAll = q.kg.timber + q.kg.ply + q.kg.raft + q.kg.oak;
   document.getElementById('stats').innerHTML = `
   <table>
     <tr><td>Podniesienie h (21 szt.)</td><td>${fmt(H)} cm</td></tr>
@@ -736,10 +755,13 @@ function renderStats() {
     <tr><td>Kantówka 45×45 (ścianki 1–9)</td><td>ok. ${Math.ceil(q.kant)} mb</td></tr>
     <tr><td>Sklejka 18 mm (ścianki, sufit niszy)</td><td>${fmt(q.ply18)} m²</td></tr>
     <tr><td>Sklejka 22 mm pod stopnicami</td><td>${fmt(q.ply22)} m²</td></tr>
+    <tr><td>Płyta OSB/3 22 mm na wylewce (2 warstwy)</td><td>${fmt(stats.raft)} m² × 2 = ${fmt(q.osb)} m²</td></tr>
     <tr><td>Stopnice dębowe ${fmt(P.tt)} cm (21 szt.)</td><td>${fmt(q.oak)} m²</td></tr>
     <tr><td>Płyty g-k 12,5 mm</td><td>ok. ${Math.ceil(stats.gk)} m²</td></tr>
     <tr><td>Grubość ściany wewn. (g-k + 10 + 2 × g-k)</td><td class="warn">${fmt(stats.wallT)} cm</td></tr>
-    <tr><td>Ciężar: drewno + sklejka + dąb</td><td>ok. ${Math.round(kgAll / 10) * 10} kg</td></tr>
+    <tr><td>Ciężar: drewno + sklejka + OSB + dąb</td><td>ok. ${Math.round(kgAll / 10) * 10} kg</td></tr>
+    <tr><td>&nbsp;&nbsp;w tym płyta OSB</td><td>ok. ${Math.round(q.kg.raft / 5) * 5} kg</td></tr>
+    <tr><td>Nacisk na wylewkę (śr., bez / z ludźmi)</td><td>${fmt((kgAll + q.kg.gk) * 9.81 / 1000 / stats.raft)} / ${fmt(((kgAll + q.kg.gk) * 9.81 / 1000 + 3 * 4) / stats.raft)} kPa</td></tr>
     <tr><td>&nbsp;&nbsp;z płytami g-k</td><td>ok. ${Math.round((kgAll + q.kg.gk) / 10) * 10} kg</td></tr>
     <tr><td>Zapas: sufit niszy → spód policzka</td><td class="${stats.nicheGap > 10 ? 'ok' : 'warn'}">${fmt(stats.nicheGap)} cm</td></tr>
   </table>`;
@@ -747,11 +769,11 @@ function renderStats() {
 
 document.getElementById('notes').innerHTML = [
   'Nic nie jest kotwione do ściany zewnętrznej ani okiennej. Policzek zewnętrzny, słupy O1–O4 i P3 stoją 1,5 cm od ściany, a szczelina jest wypełniona elastyczną taśmą. Pochwyt w ścianie to tylko wykończenie.',
-  'Obciążenie idzie w dół: przez podwaliny ścianek, ścianę szkieletową i stopy słupów na posadzkę i strop pod spodem. Do krawędzi stropu antresoli mocowana jest tylko listwa <b>L1</b> pod wejściem (stopień 21).',
+  'Obciążenie idzie w dół na <b>płytę OSB 2×22 mm leżącą na wylewce</b> (anhydryt 60 mm na styropianie akustycznym, z ogrzewaniem podłogowym), a przez nią na posadzkę pływającą i strop pod spodem. Do krawędzi stropu antresoli mocowana jest tylko listwa <b>L1</b> pod wejściem (stopień 21).',
   '<span class="warn">Do sprawdzenia przez konstruktora: strop pod biegiem (nad lokalem poniżej) pod reakcje ze słupów i ścianek, kotwienie L1 w czoło stropu (np. kotwy mechaniczne jak w opracowaniu KLO), przekroje z tego modelu.</span>',
   '<span class="warn">Ściana wewnętrzna ma ok. 14 cm (szkielet 10 cm + g-k), a w projekcie EKR 5 cm. Trzeba zmierzyć, gdzie naprawdę jest krawędź stropu antresoli, i sprawdzić, ile miejsca zabierze to pokojowi pod antresolą.</span>',
-  'Posadzka: najlepiej postawić podwaliny i stopy słupów na płycie stropowej przed wylewką i z dylatacją. Jeśli jastrych już jest, słupy stawia się na stalowych podstawach z podkładką rozkładającą nacisk. Przed kotwieniem trzeba sprawdzić rury ogrzewania podłogowego.',
-  'Akustyka: elastomer pod wszystkimi podwalinami i stopami słupów (izolacja od stropu nad sąsiadem), wełna w przestrzeni pod biegiem, stopnice i podstopnice klejone i wkręcane.',
+  'Płyta OSB: dwie warstwy 22 mm na krzyż, z przesuniętymi stykami, klejone PU i skręcone co 20 cm. Leży luzem na wylewce, 1 cm od ściany zewnętrznej, <b>bez kotew w wylewkę</b> (rury ogrzewania). Słupy stoją na podwalinach 6×10 przykręconych do płyty. Płyta musi w całości mostkować dylatacje wylewki, a żaden słup nie może wypaść nad dylatacją.',
+  'Akustyka: schody stoją na posadzce pływającej, więc są oddzielone od stropu nad sąsiadem. Elastomer przydaje się tylko przy ścianie zewnętrznej i pod oczepem przy stropie. Do tego wełna w przestrzeni pod biegiem i klejone stopnice oraz podstopnice.',
   'Drewno KVH/BSH suszone komorowo (≤ 15 %). Dąb aklimatyzować na miejscu ok. 2 tygodnie. Montaż dopiero po tynkach i wylewkach.',
   '<span class="warn">Wysokość w krytycznym miejscu (st. 11–12 → +3,82): 182 / 163,5 cm z przekroju – do weryfikacji z zabudową antresoli.</span>',
   'Przekroje i łączniki są założeniami koncepcji do weryfikacji. Model służy do rozmowy z konstruktorem i do zakupów.',
@@ -844,7 +866,8 @@ function renderSheet() {
     stats.ply.map(p => {
       const xs = p.poly.map(v => v[0]), ys = p.poly.map(v => v[1]);
       return `<tr>${td(p.n)}${td(`${fmt(Math.max(...xs) - Math.min(...xs))} × ${fmt(Math.max(...ys) - Math.min(...ys))}`, 1)}${td(fmt(area(p.poly) / 1e4), 1)}${td(p.n >= 19 && p.n < 21 ? 'wchodzi pod legar następnego stopnia' : '')}</tr>`;
-    }).concat(`<tr>${td('<b>Razem</b>')}${td('', 1)}${td('<b>' + fmt(q.ply22) + '</b>', 1)}${td('kleić PU + wkręcać do ścianek / legarów co 15 cm')}</tr>`));
+    }).concat(`<tr>${td('<b>Razem</b>')}${td('', 1)}${td('<b>' + fmt(q.ply22) + '</b>', 1)}${td('kleić PU + wkręcać do ścianek / legarów co 15 cm')}</tr>`,
+      `<tr>${td('<b>Płyta OSB/3 22 mm na wylewce</b>')}${td('2 warstwy na krzyż', 1)}${td('<b>' + fmt(q.osb) + '</b>', 1)}${td(`${fmt(stats.raft)} m² pod całymi schodami, ok. ${Math.ceil(q.osb / 3.125 * 1.15)} arkuszy 2500×1250`)}</tr>`));
 
   // stopnice dębowe (grupowanie identycznych kształtów)
   const groups = [];
@@ -874,20 +897,21 @@ function renderSheet() {
     ['Wieszaki belek / kątowniki ciesielskie (np. Simpson BSN, ABR)', 'ok. 16 + 24 szt.', 'J20h, J21, Lz19, Lz20, końce policzków, B1'],
     ['Gwoździe pierścieniowe / wkręty CNA 4×40–60', '1–2 opak.', 'do wieszaków i kątowników'],
     ['Kotwy mechaniczne do betonu (np. Fischer FAZ II M10)', 'ok. 6–8 szt.', 'L1 w czoło stropu – rozstaw i głębokość wg konstruktora'],
-    ['Wkręty do betonu 7,5×100 / kotwy', 'ok. 25 szt.', 'podwaliny ścianek i ściany, oczep do stropu, stopy słupów'],
-    ['Podstawy słupów stalowe (opcja na gotowym jastrychu)', '10 szt.', 'O1–O4, P2, P3, J1–J3, N1'],
-    ['Taśma / podkład elastomerowy (np. Sylomer, Regupol) 100 mm', 'ok. 15 mb + 10 podkładek', 'pod podwaliny i słupy, szczelina przy ścianie zewn.'],
+    ['Wkręty do betonu 7,5×100', 'ok. 10 szt.', 'oczep ściany do spodu stropu (w wylewkę nic nie kotwimy)'],
+    ['Wkręty 6×80–100 do płyty OSB', 'ok. 80 szt.', 'podwaliny słupów, ścianki i ściana do płyty'],
+    ['Wkręty 5×40 do sklejenia warstw OSB', 'ok. 300 szt.', 'co ok. 20 cm, plus klej PU'],
+    ['Taśma elastomerowa / dylatacyjna', 'ok. 10 mb', 'szczelina przy ścianie zewn., oczep przy stropie'],
     ['Wkręty do sklejki 5×50 / 5×70', 'ok. 500 szt.', 'ścianki 1–9, sklejka pod stopnicami'],
-    ['Klej PU D4 do drewna', '2–3 kg', 'sklejka / ścianki / podstopnice (anty-skrzypienie)'],
+    ['Klej PU D4 do drewna', '3–4 kg', 'warstwy OSB, sklejka, ścianki, podstopnice (anty-skrzypienie)'],
     ['Klej elastyczny MS / PU do stopnic', 'ok. 10 kartuszy', 'stopnice na sklejkę i policzki'],
     ['Wełna mineralna 5–10 cm', 'ok. 8–10 m²', 'przestrzeń pod biegiem, ściana wewn.'],
   ];
   document.getElementById('sheetHw').innerHTML = tbl(['Pozycja', 'Ilość', 'Gdzie'], hw.map(r => `<tr>${r.map(v => td(v)).join('')}</tr>`));
 
-  const kgAll = q.kg.timber + q.kg.ply + q.kg.oak;
+  const kgAll = q.kg.timber + q.kg.ply + q.kg.raft + q.kg.oak;
   document.getElementById('sheetMeta').innerHTML =
     `Podniesienie ${fmt(H)} cm × 21, stopień 24 cm + nosek ${fmt(P.nos)} cm. Stopnice z litego dębu ${fmt(P.tt)} cm, podstopnice ${fmt(P.rb * 10)} mm. ` +
-    `Policzki BSH GL24h 8×${P.D}, słupy i legary KVH C24. Konstrukcja z drewna, sklejki i dębu waży ok. <b>${Math.round(kgAll / 10) * 10} kg</b> ` +
+    `Policzki BSH GL24h 8×${P.D}, słupy i legary KVH C24. Konstrukcja z drewna, sklejki, płyty OSB i dębu waży ok. <b>${Math.round(kgAll / 10) * 10} kg</b> ` +
     `(z płytami g-k ok. ${Math.round((kgAll + q.kg.gk) / 10) * 10} kg). Długości to wymiary netto elementów w cm. ` +
     `Wszystkie wymiary trzeba zweryfikować na budowie po wylaniu posadzek, a przekroje i łączniki zatwierdzić u konstruktora przed zakupem.`;
 }

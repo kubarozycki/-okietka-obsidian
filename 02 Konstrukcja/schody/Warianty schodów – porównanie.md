@@ -13,7 +13,7 @@ Rozważane były cztery warianty. Kluczowe ograniczenie to **strop pod schodami*
 | Wariant | Ciężar (szac.) | Samodzielnie | Ryzyko dla stropu | Komentarz |
 |---|---|---|---|---|
 | **Stal** (projekt EKR) | ~0,3–0,5 t + mur stopni 1–8 | raczej nie (spawanie, ślusarz) | niskie | najsmuklejsza, „lewitująca”; wymaga projektu i wykonawcy |
-| **Drewno – szkielet** | ~0,9 t (z g-k ~1,1 t), rozłożone na wiele podpór | **tak** | niskie | konstrukcja schowana w zabudowie, wygląd jak w projekcie |
+| **Drewno – szkielet** | ~1,07 t (z g-k ~1,3 t), na płycie OSB rozkładającej nacisk (~2,4 kPa) | **tak** | niskie | konstrukcja schowana w zabudowie, wygląd jak w projekcie |
 | **Mur pod biegiem** (bloczki) | ~0,6–2 t liniowo, zależnie od materiału | tak (beton komórkowy) | średnie | jedna ściana podpiera tylko jedną krawędź biegu |
 | **Żelbet lany** | **~3–3,5 t** | trudne | **wysokie** | najlepszy w odbiorze, ale ciężar na strop nad sąsiadem |
 
@@ -29,7 +29,7 @@ Rozważane były cztery warianty. Kluczowe ograniczenie to **strop pod schodami*
 
 - Przestrzeń pod biegiem jest zamknięta: ściana zewnętrzna, ściana g-k i same schody. Konstrukcję można więc podeprzeć od dołu słupami i ściankami, a nie wieszać na policzkach.
 - Stopnie 1–8 stoją na ściankach szkieletowych ze sklejką (kubiki meblowe), 9–18 na dwóch policzkach zębatych BSH 8×28, zabiegowe 19–21 na piętrzonych legarach KVH (16 cm legaru + 22 mm sklejki = jedno podniesienie).
-- Nic nie jest kotwione do ściany zewnętrznej. Do konstrukcji budynku mocowana jest tylko listwa pod wejściem na antresolę (kotwy w czoło stropu).
+- Całość stoi na płycie OSB 2×22 mm leżącej na wylewce, bez kotew w wylewkę (rury ogrzewania). Nic nie jest kotwione do ściany zewnętrznej. Do konstrukcji budynku mocowana jest tylko listwa pod wejściem na antresolę (kotwy w czoło stropu).
 - Ryzyka: skrzypienie (ograniczają je klejone połączenia i suche drewno) oraz dokładność podniesień (laser). Strop pod spodem musi sprawdzić konstruktor.
 
 ## Mur pod biegiem
