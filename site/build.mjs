@@ -119,6 +119,11 @@ function modelNav(current) {
   .site-pill a { color: #fff; text-decoration: none; padding: 7px 9px; border-radius: 7px; white-space: nowrap; }
   .site-pill a:hover { background: rgba(255,255,255,.14); }
   .site-pill a[aria-current="page"] { background: #fff; color: #1d2126; }
+  @media (max-width: 760px) {
+    .site-pill { left: 8px; right: 8px; bottom: 8px; max-width: none; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; background: rgba(29,33,38,.96); }
+    .site-pill::-webkit-scrollbar { display: none; }
+    .site-pill a { padding: 8px 9px; }
+  }
   @media print { .site-pill { display: none !important; } }
 </style>
 <nav class="site-pill" aria-label="Nawigacja">${links}</nav>

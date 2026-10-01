@@ -68,9 +68,12 @@
     .treads { grid-template-columns: repeat(3, 1fr); }
   }
   @media (max-width: 760px) {
-    aside { position: static; width: auto; height: auto; border-right: 0; border-bottom: 1px solid var(--line); }
-    #app, #labels { position: relative; inset: auto; height: 70vh; }
-    #labels { position: absolute; top: 0; left: 0; right: 0; }
+    /* telefon: scena 3D przypięta u góry, etykiety przycięte do niej, panel przewija się pod spodem */
+    #app, #labels { position: fixed; inset: 0 0 auto 0; height: 55vh; height: 55svh; }
+    #app { border-bottom: 1px solid var(--line); }
+    #labels { overflow: hidden; }
+    html, body { height: auto; }
+    aside { position: static; width: auto; height: auto; border-right: 0; margin-top: 55vh; margin-top: 55svh; padding-bottom: 120px; }
     body { overflow: auto; }
   }
 </style>
@@ -334,6 +337,7 @@ const LAYERS = [
   ['parts',   'opisy elementów', 0x1d2126, false],
 ];
 const layerState = Object.fromEntries(LAYERS.map(l => [l[0], l[3]]));
+if (matchMedia('(max-width: 760px)').matches) layerState.dims = false;   // na telefonie wymiary zasłaniają model
 let root = null, groups = {};
 const grp = name => groups[name] || (groups[name] = Object.assign(new THREE.Group(), { name }), root.add(groups[name]), groups[name]);
 
