@@ -14,6 +14,8 @@ const PAGES = [
     desc: 'Stal, drewno, mur czy żelbet – porównanie ciężaru, wykonania i ryzyka dla stropu.' },
   { slug: 'projekt-drewniany', nav: 'Projekt drewniany', kind: 'md', src: `${SCHODY}/Schody drewniane – projekt.md`,
     desc: 'Wybrany wariant: elementy, przekroje, obliczenia wstępne, kolejność robót, koszty, pytania do konstruktora.' },
+  { slug: 'lista-zakupow', nav: 'Lista zakupów', kind: 'md', src: `${SCHODY}/Schody drewniane – lista zakupów.md`,
+    desc: 'Drewno, płyty i łączniki na konstrukcję drewnianą: ilości, cięcia na sztangi, ceny i checklista. Plus BSH, KVH czy LVL.' },
   { slug: 'model-drewno', nav: 'Model 3D – drewno', kind: 'model', src: `${SCHODY}/schody-drewno.html`,
     desc: 'Interaktywny model szkieletu drewnianego z listą cięć, stopnicami i zestawieniem materiałów do druku.' },
   { slug: 'model-stal', nav: 'Model 3D – stal', kind: 'model', src: `${SCHODY}/schody.html`,

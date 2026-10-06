@@ -47,6 +47,13 @@ a { color: var(--accent); }
 .site-nav ul a { display: block; padding: 6px 10px; border-radius: 7px; color: var(--nav-ink); text-decoration: none; font-size: 14px; opacity: .85; }
 .site-nav ul a:hover { opacity: 1; background: rgba(255,255,255,.1); }
 .site-nav ul a[aria-current="page"] { opacity: 1; background: var(--accent); color: var(--accent-ink); }
+@media (max-width: 640px) {
+  .site-nav { flex-wrap: nowrap; flex-direction: column; align-items: stretch; gap: 6px; padding: 10px 0 8px; }
+  .site-nav .brand { padding: 0 16px; }
+  .site-nav ul { flex-wrap: nowrap; overflow-x: auto; padding: 0 12px; scrollbar-width: none; }
+  .site-nav ul::-webkit-scrollbar { display: none; }
+  .site-nav ul a { white-space: nowrap; }
+}
 
 /* układ */
 .page { max-width: 880px; margin: 0 auto; padding: 32px 16px 48px; }

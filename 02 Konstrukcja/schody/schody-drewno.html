@@ -540,9 +540,11 @@ function build() {
   sp.push([yEnd, zo(yEnd) - P.D * SEC], [yf, zF]);
   prismYZ(gs, sp, OS0, OS1, M.bsh);
   prismYZ(gs, sp, IS0, IS1, M.bsh);
-  const strLen = Math.hypot(yEnd - y9, zo(yEnd) - zF) + 10;
-  piece('PZ – policzek zewnętrzny', `BSH 8×${P.D}`, strLen, 'zęby wg szablonu 18,19 / 24, stopa na S9, koniec na O3');
-  piece('PW – policzek wewnętrzny', `BSH 8×${P.D}`, strLen, 'przykręcony do słupków ściany, stopa na S9, koniec na N1');
+  const ux = G / Math.hypot(G, H), uz = H / Math.hypot(G, H);          // długość deski = rzut profilu na kierunek biegu
+  const proj = sp.map(([y, z]) => y * ux + z * uz);
+  const strLen = Math.max(...proj) - Math.min(...proj);
+  piece('PZ – policzek zewnętrzny', `BSH 8×${P.D}`, strLen, `netto; zamówić ${fmt(Math.ceil((strLen + 30) / 50) / 2)} m · zęby 18,19 / 24, stopa na S9, koniec na O3`);
+  piece('PW – policzek wewnętrzny', `BSH 8×${P.D}`, strLen, `netto; zamówić ${fmt(Math.ceil((strLen + 30) / 50) / 2)} m · przykręcony do słupków ściany, stopa na S9, koniec na N1`);
 
   // — Stopnie zabiegowe 19–21: sklejka + piętrzone legary ——————————————
   for (const n of [19, 20, 21]) {

@@ -9,6 +9,8 @@ tags: [konstrukcja, schody, drewno, koncepcja]
 
 **Model 3D z listą cięć:** `schody-drewno.html` (otwórz w przeglądarce). Przycisk *„Lista elementów i stopnic”* generuje arkusz do druku z drewnem wg przekroju, listą cięć, ściankami, sklejką, kształtami stopnic, podstopnicami i łącznikami. Parametry (grubość stopnicy, nosek, wysokość policzka, odsunięcie od ściany) przeliczają wszystko na bieżąco.
 
+**Lista zakupów** (drewno, płyty, łączniki z cięciem na sztangi): [[Schody drewniane – lista zakupów]]
+
 Wariant stalowy dla porównania: `schody.html` · Rysunki architektki: [[EKR schody (2).pdf]], [[EKR schody przekroj.pdf]]
 
 ---
