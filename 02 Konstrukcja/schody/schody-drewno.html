@@ -96,6 +96,7 @@
     <button data-view="plan">Rzut</button>
     <button data-view="section">Przekrój</button>
     <button data-view="under">Pod biegiem</button>
+    <button data-view="block">Dół 1–9</button>
   </div>
 
   <h2>Warstwy</h2>
@@ -297,7 +298,10 @@ grid.position.copy(V(150, 200, 0)); scene.add(grid);
 const clipPlane = new THREE.Plane(new THREE.Vector3(-1, 0, 0), 1e5);
 const mat = (color, o = {}) => new THREE.MeshStandardMaterial({ color, roughness: 0.8, metalness: 0, clippingPlanes: [clipPlane], side: THREE.DoubleSide, ...o });
 const M = {
-  frame:   mat(0xe3cfa4, { roughness: 0.9 }),
+  frame:   mat(0xc9a46a, { roughness: 0.85 }),
+  sheath:  mat(0xeadbb4, { roughness: 0.9 }),
+  cleat:   mat(0x8f6a3c, { roughness: 0.8 }),
+  steel:   mat(0x4a5560, { metalness: 0.6, roughness: 0.4 }),
   ply:     mat(0xd8c48c, { roughness: 0.85 }),
   oak:     mat(0xa8713a, { roughness: 0.55 }),
   riser:   mat(0x8c5a2c, { roughness: 0.6 }),
@@ -326,7 +330,9 @@ const NICHE_LINE = new THREE.LineDashedMaterial({ color: 0x1971c2, dashSize: 4, 
 // ─────────────────────────────────────────────────────────────
 const LAYERS = [
   ['raft',      'płyta OSB 2×22 na wylewce + podwaliny', 0xc9a86a, true],
-  ['frame',     'stopnie 1–9: ścianki szkieletowe', 0xe3cfa4, true],
+  ['sheath',    'stopnie 1–9: poszycie sklejka / OSB 18', 0xeadbb4, true],
+  ['frame',     'stopnie 1–9: rama z kantówki 45×45', 0xc9a46a, true],
+  ['cleats',    'stopnie 1–8: listwy oporowe 45×45', 0x8f6a3c, true],
   ['ply',       'sklejka 22 mm pod stopnicami', 0xd8c48c, true],
   ['fronts',    'fronty meblowe stopni 1–8 (opcja)', 0x3d8fe0, false],
   ['treads',    'stopnice dębowe', 0xa8713a, true],
@@ -339,6 +345,7 @@ const LAYERS = [
   ['wall',      'ściana wewn. – szkielet KVH 6×10', 0xe8d6ae, true],
   ['gk',        'płyty g-k + ścianka na antresoli', 0xdfe4ec, true],
   ['slab',      'strop antresoli (orientacyjnie)', 0x9aa7b8, true],
+  ['steel',     'istniejący słup stalowy S-01', 0x4a5560, true],
   ['walls',     'ściany zewnętrzne', 0xcfc9bd, true],
   ['rail',      'pochwyt wpuszczany + LED', 0xffe9a8, true],
   ['niche',     'legowisko dla psa', 0x1971c2, true],
@@ -468,7 +475,28 @@ function build() {
   bx(graft, 'Podwalina pod słupami wewn.', 'KVH 6×10', PJ0, PJ1, NICHE.y1, 419, RT, ZS, M.raft, undefined, 'na płask');
 
   // — Stopnie 1–8: ścianki szkieletowe pod krawędziami + sklejka ——————
-  const gfr = grp('frame'), gpl = grp('ply'), W = 8;
+  // ścianka = rama z kantówki 45×45 (podwalina, oczep, słupki co ≤ 40 cm) + poszycie 18 mm z obu stron (razem 8,1 cm)
+  const gfr = grp('frame'), gsh = grp('sheath'), gcl = grp('cleats'), gpl = grp('ply');
+  const K45 = 4.5, SH = 1.8, W = SH + K45 + SH;
+  function frameWall(seg, ref, z0, z1, clip) {
+    const [a, b] = seg, L = segLen(seg), u = [(b[0] - a[0]) / L, (b[1] - a[1]) / L];
+    let n = [-u[1], u[0]];
+    if ((ref[0] - a[0]) * n[0] + (ref[1] - a[1]) * n[1] < 0) n = [-n[0], -n[1]];
+    const at = (t, o) => [a[0] + u[0] * t + n[0] * o, a[1] + u[1] * t + n[1] * o];
+    const quad = (t0, t1, o0, o1) => clipToPoly([at(t0, o0), at(t1, o0), at(t1, o1), at(t0, o1)], clip);
+    prism(gsh, quad(0, L, 0, SH), z0, z1, M.sheath);                      // poszycie – strona 1
+    prism(gsh, quad(0, L, SH + K45, W), z0, z1, M.sheath);                // poszycie – strona 2
+    const c0 = SH, c1 = SH + K45;
+    if (z1 - z0 <= 2 * K45 + 1) {                                         // niska ścianka: same podwalina + oczep
+      prism(gfr, quad(0, L, c0, c1), z0, z0 + K45, M.frame);
+      if (z1 - z0 > K45 + 0.5) prism(gfr, quad(0, L, c0, c1), z1 - K45, z1, M.frame);
+      return;
+    }
+    prism(gfr, quad(0, L, c0, c1), z0, z0 + K45, M.frame);               // podwalina
+    prism(gfr, quad(0, L, c0, c1), z1 - K45, z1, M.frame);               // oczep
+    const m = Math.max(1, Math.ceil((L - K45) / 40));                     // słupki co ≤ 40 cm (w tym skrajne)
+    for (let i = 0; i <= m; i++) { const t = i * (L - K45) / m; prism(gfr, quad(t, t + K45, c0, c1), z0 + K45, z1 - K45, M.frame); }
+  }
   for (let k = 1; k <= 8; k++) {
     const s = st(k), nx = st(k + 1);
     const ply = clipBox(s.poly, { x0: OS0 });
@@ -478,19 +506,38 @@ function build() {
     const c = centroid(ply);
     ply.forEach((p, i) => {
       const q = ply[(i + 1) % ply.length];
-      if (onLine(p, q, nx.front)) return;                     // tę krawędź niesie ścianka następnego stopnia
+      if (onLine(p, q, nx.front)) {                                       // tę krawędź niesie ścianka następnego stopnia
+        if (k < 8) {                                                      // listwa oporowa na ściance k+1 pod tyłem sklejki k
+          const cn = centroid(nx.poly), [sa, sb] = shiftSeg([p, q], P.rb - K45, cn);
+          prism(gcl, clipBox(strip(sa, sb, K45, cn), { x0: OS0 }), zt - K45, zt, M.cleat);
+        }
+        return;
+      }
       const isFront = onLine(p, q, s.front);
-      const seg = isFront ? shiftSeg([p, q], P.rb, c) : [p, q];
-      const poly = clipToPoly(strip(seg[0], seg[1], W, c), ply);
-      if (poly.length < 3) return;
-      prism(gfr, poly, RT, zt, M.frame);
-      stats.walls.push({ n: k, kind: isFront ? 'pod podstopnicą' : 'boczna', len: spanAlong(poly, seg), h: zt - RT });
+      let seg = isFront ? shiftSeg([p, q], P.rb, c) : [p, q];
+      if (isFront) {                                    // ścianka poprzeczna kończy się na licu ścianek bocznych
+        const sides = ply.map((v, j) => [v, ply[(j + 1) % ply.length]])
+          .filter(([v, w]) => !onLine(v, w, s.front) && !onLine(v, w, nx.front));
+        const L = segLen(seg), u = [(seg[1][0] - seg[0][0]) / L, (seg[1][1] - seg[0][1]) / L];
+        const onSide = pt => sides.some(([v, w]) => lineDist(pt, v, w) < 0.2);
+        const t0 = onSide(seg[0]) ? W : 0, t1 = onSide(seg[1]) ? L - W : L;
+        seg = [[seg[0][0] + u[0] * t0, seg[0][1] + u[1] * t0], [seg[0][0] + u[0] * t1, seg[0][1] + u[1] * t1]];
+      }
+      frameWall(seg, c, RT, zt, ply);
+      stats.walls.push({ n: k, kind: isFront ? 'pod podstopnicą' : 'boczna', len: spanAlong(clipToPoly(strip(seg[0], seg[1], W, c), ply), seg), h: zt - RT });
     });
   }
-  // S9 – ścianka pod podstopnicą 9: dźwiga tył sklejki 8 i stopy obu policzków
+  // S9 – ścianka pod podstopnicą 9: dźwiga tył sklejki 8 i stopy obu policzków.
+  // Podwójna rama z kantówki 45×45 (9 cm) + sklejka 18 od strony stopnia 8, pod stopami policzków pełne słupki.
   const zF = bT(8) - P.ply;
-  box(gfr, OS0, ST0, 86, 96, RT, zF, M.frame);
-  stats.walls.push({ n: 9, kind: 'pod podstopnicą 9 + stopa policzków (gr. 10)', len: ST0 - OS0, h: zF - RT, thick: true });
+  const S9 = { y0: 86, y1: 86 + SH + 2 * K45 };
+  box(gsh, OS0, ST0, S9.y0, S9.y0 + SH, RT, zF, M.sheath);
+  const c9 = S9.y0 + SH;
+  box(gfr, OS0, ST0, c9, S9.y1, RT, RT + K45, M.frame);                  // podwalina (2 rzędy)
+  box(gfr, OS0, ST0, c9, S9.y1, zF - K45, zF, M.frame);                  // oczep (2 rzędy)
+  for (const [x0, x1] of [[OS0, OS0 + 9], [IS1 - 9, IS1], [(OS0 + IS1) / 2 - 4.5, (OS0 + IS1) / 2 + 4.5]])
+    box(gfr, x0, x1, c9, S9.y1, RT + K45, zF - K45, M.frame);            // słupki: pod PZ, pod PW, środkowy
+  stats.walls.push({ n: 9, kind: 'pod podstopnicą 9 + stopa policzków (rama podwójna, gr. ~11)', len: ST0 - OS0, h: zF - RT, thick: true });
 
   // fronty meblowe na licu y = 0 (kubiki)
   const gf = grp('fronts');
@@ -627,6 +674,18 @@ function build() {
   box(gg, GK_X0, RM1, 90, 330, SLAB_TOP, SLAB_TOP + 110, M.gkWall);
   stats.gk = (2 * (419 - 90) * SLAB_BOT - 2 * (NICHE.y1 - NICHE.y0) * NICHE.h + area(gkStair)) / 1e4;   // m² płyty
 
+  // — Istniejący słup stalowy S-01 (K-03, K-24, rzut EKR): RO 139,7×5,0, L = 376 cm, blachy 200×200×12 ————
+  // stoi na stropie 3.1 (pod posadzką, ok. −14) i podpiera strop 2.1 (antresola); oś ok. 104 cm od ściany, 11 cm przed bokiem stopni 1–5
+  const gst = grp('steel');
+  const COL = { x: 104, y: -11, r: 139.7 / 20, z0: -14, z1: SLAB_BOT };
+  const cyl = new THREE.CylinderGeometry(COL.r, COL.r, COL.z1 - COL.z0 - 2.4, 40);
+  cyl.translate(COL.x, (COL.z0 + COL.z1) / 2, COL.y);
+  addMesh(gst, cyl, M.steel);
+  box(gst, COL.x - 10, COL.x + 10, COL.y - 10, COL.y + 10, COL.z0, COL.z0 + 1.2, M.steel);
+  box(gst, COL.x - 10, COL.x + 10, COL.y - 10, COL.y + 10, COL.z1 - 1.2, COL.z1, M.steel);
+  label(gst, V(COL.x, COL.y - 9, 230), 'S-01 – istniejący słup stalowy RO 139,7×5', 'part');
+  stats.colGap = -(COL.y + COL.r);
+
   // — Strop antresoli (orientacyjnie) ——————————————————————————————
   const gsl = grp('slab');
   box(gsl, SLAB_X0, 330, -60, 420, SLAB_BOT, SLAB_TOP, M.slab);
@@ -658,7 +717,8 @@ function build() {
   const gl = grp('parts');
   label(gl, V(OS0, 260, zo(260) - 22), `PZ – policzek zewn. BSH 8×${P.D}`, 'part');
   label(gl, V(IS0, 190, zo(190) - 22), 'PW – policzek wewn. (przy ścianie)', 'part');
-  label(gl, V(150, 45, 55), 'S1–S8: ścianki 45×45 + sklejka 18', 'part');
+  label(gl, V(150, 45, 55), 'S1–S8: rama 45×45 + poszycie 18 obustronnie', 'part');
+  label(gl, V(150, 60, 20), 'listwy oporowe pod tyłem sklejki', 'part');
   label(gl, V(50, 300, RT + 2), 'płyta OSB 2×22 na wylewce (bez kotew)', 'part');
   label(gl, V(PO1, 160, ZS + 2), 'podwalina 6×10 pod słupami', 'part');
   label(gl, V(45, 91, zF - 25), 'S9 – stopa policzków', 'part');
@@ -684,6 +744,8 @@ function build() {
   dim([98, NICHE.y0, NICHE.h + 4], [98, NICHE.y1, NICHE.h + 4], '100', [0, 0, 2]);
   dim([98, NICHE.y0 - 3, 0], [98, NICHE.y0 - 3, NICHE.h], '120', [2, 0, 0]);
   dim([150, 300, SLAB_BOT], [150, 300, SLAB_TOP], '20', [3, 0, 0]);
+  dim([0, COL.y, 2], [COL.x, COL.y, 2], `${COL.x} – oś S-01`, [0, 3, 0]);
+  dim([COL.x + 12, COL.y + COL.r, 60], [COL.x + 12, 0, 60], `${fmt(stats.colGap)}`, [2, 0, 0], true);
   dim([85, 150, 11 * H], [85, 150, HTOT], `${fmt(HTOT - 11 * H)} – zab. antresoli 140`, [2, 0, 0], true);
   dim([85, 174, 12 * H], [85, 174, HTOT], `${fmt(HTOT - 12 * H)} – zab. antresoli 190`, [2, 0, 0], true, [0, 0, -30]);
 
@@ -732,7 +794,8 @@ cut.addEventListener('input', () => {
 // Ilości i ciężary
 // ─────────────────────────────────────────────────────────────
 const secArea = s => { const m = s.match(/(\d+(?:[.,]\d+)?)×(\d+(?:[.,]\d+)?)/); return m ? parseFloat(m[1].replace(',', '.')) * parseFloat(m[2].replace(',', '.')) : 0; };
-const wallTimber = w => 2 * w.len + (Math.ceil(w.len / 40) + 1) * w.h;     // kantówka: podwalina + oczep + słupki co 40 cm
+const wallTimber = w => (w.thick ? 2 : 1) * (2 * w.len + (Math.ceil(w.len / 40) + 1) * w.h);   // kantówka: podwalina + oczep + słupki co 40 cm (S9 podwójnie)
+const wallSheath = w => (w.thick ? 1 : 2) * w.len * w.h;                    // poszycie: obustronnie, S9 jednostronnie
 function quantities() {
   const bySec = {};
   for (const p of stats.pieces) {
@@ -741,7 +804,7 @@ function quantities() {
   }
   const vol = Object.values(bySec).reduce((s, g) => s + g.vol, 0) / 1e6;                  // m³ KVH/BSH
   const kant = stats.walls.reduce((s, w) => s + wallTimber(w), 0) / 100;                  // mb kantówki
-  const ply18 = stats.walls.reduce((s, w) => s + 2 * w.len * w.h, 0) / 1e4 + stats.nicheCeil; // m²
+  const ply18 = stats.walls.reduce((s, w) => s + wallSheath(w), 0) / 1e4 + stats.nicheCeil; // m²
   const ply22 = stats.ply.reduce((s, p) => s + area(p.poly), 0) / 1e4;                    // m²
   const osb = stats.raft * 2;                                                             // m² OSB 22 (2 warstwy)
   const oak = stats.treads.reduce((s, t) => s + area(t.poly), 0) / 1e4;                   // m² stopnic
@@ -789,6 +852,7 @@ document.getElementById('notes').innerHTML = [
   '<span class="warn">Ściana wewnętrzna ma ok. 14 cm (szkielet 10 cm + g-k), a w projekcie EKR 5 cm. Trzeba zmierzyć, gdzie naprawdę jest krawędź stropu antresoli, i sprawdzić, ile miejsca zabierze to pokojowi pod antresolą.</span>',
   'Płyta OSB: dwie warstwy 22 mm na krzyż, z przesuniętymi stykami, klejone PU i skręcone co 20 cm. Leży luzem na wylewce, 1 cm od ściany zewnętrznej, <b>bez kotew w wylewkę</b> (rury ogrzewania). Słupy stoją na podwalinach 6×10 przykręconych do płyty. Płyta musi w całości mostkować dylatacje wylewki, a żaden słup nie może wypaść nad dylatacją.',
   'Akustyka: schody stoją na posadzce pływającej, więc są oddzielone od stropu nad sąsiadem. Elastomer przydaje się tylko przy ścianie zewnętrznej i pod oczepem przy stropie. Do tego wełna w przestrzeni pod biegiem i klejone stopnice oraz podstopnice.',
+  '<span class="warn">Istniejący słup stalowy S-01 (RO 139,7×5) stoi ok. 4 cm przed bokiem stopni 5–6, czyli tam, gdzie miały być fronty kubików. Fronty i drzwiczki w tym miejscu nie otworzą się, a do słupa nic nie mocujemy (nie wiercić, nie spawać, to element nośny stropu antresoli).</span>',
   'Drewno KVH/BSH suszone komorowo (≤ 15 %). Dąb aklimatyzować na miejscu ok. 2 tygodnie. Montaż dopiero po tynkach i wylewkach.',
   '<span class="warn">Wysokość w krytycznym miejscu (st. 11–12 → +3,82): 182 / 163,5 cm z przekroju – do weryfikacji z zabudową antresoli.</span>',
   'Przekroje i łączniki są założeniami koncepcji do weryfikacji. Model służy do rozmowy z konstruktorem i do zakupów.',
@@ -873,7 +937,7 @@ function renderSheet() {
 
   // ścianki
   document.getElementById('sheetWalls').innerHTML = tbl(['Stopień', 'Ścianka', 'Długość [cm]', 'Wysokość [cm]', 'Kantówka [mb]', 'Sklejka 18 [m²]'],
-    stats.walls.map(w => `<tr>${td(w.n)}${td(w.kind)}${td(fmt(w.len), 1)}${td(fmt(w.h), 1)}${td(fmt(wallTimber(w) / 100), 1)}${td(fmt(2 * w.len * w.h / 1e4), 1)}</tr>`)
+    stats.walls.map(w => `<tr>${td(w.n)}${td(w.kind)}${td(fmt(w.len), 1)}${td(fmt(w.h), 1)}${td(fmt(wallTimber(w) / 100), 1)}${td(fmt(wallSheath(w) / 1e4), 1)}</tr>`)
     .concat(`<tr>${td('<b>Razem</b>')}${td('')}${td('', 1)}${td('', 1)}${td('<b>' + fmt(q.kant) + '</b>', 1)}${td('<b>' + fmt(q.ply18 - stats.nicheCeil) + '</b>', 1)}</tr>`));
 
   // sklejka pod stopnicami
@@ -939,6 +1003,7 @@ const VIEWS = {
   plan:    { pos: V(90, 211, 3200), tgt: V(90, 210, 0), fov: 11 },
   section: { pos: V(3200, 205, 200), tgt: V(0, 205, 200), fov: 11 },
   under:   { pos: V(260, 160, 40), tgt: V(40, 250, 230), fov: 55 },
+  block:   { pos: V(330, -210, 230), tgt: V(105, 45, 55), fov: 38 },
 };
 let anim = null;
 function setView(name) {

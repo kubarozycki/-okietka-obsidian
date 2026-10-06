@@ -32,6 +32,7 @@ Kolejność prac dla konstrukcji z [[Schody drewniane – projekt]]. Materiały 
 
 - [ ] Odkurzyć wylewkę i sprawdzić płaskość (łata 2 m). Ewentualne garby zeszlifować #schody
 - [ ] Laserem wyznaczyć na posadzce: obrys płyty, lico ściany wewnętrznej (x = 90 / słupki od 91,25), osie słupów, linie czół stopni 1–9 #schody
+- [ ] Zmierzyć rzeczywiste położenie słupa S-01 (w modelu oś 104 cm od ściany, 11 cm przed bokiem stopni). Jeśli zostaje mniej niż ~2 cm, przesunąć blok 1–8 albo zwęzić ścianki boczne #schody
 - [ ] Na ścianie bliźniaka ołówkiem: wierzchy wszystkich 21 stopnic i linię spodu policzka. **Tylko ołówek, żadnego wiercenia** #schody
 - [ ] OSB warstwa 1, potem warstwa 2 na krzyż: klej PU na całej powierzchni, wkręty 5×40 co ~20 cm, styki przesunięte ≥ 60 cm. Płyta luzem na wylewce, 1 cm od ściany (taśma), dylatacje wylewki przykryte w całości #schody
 - [ ] Podwaliny pod słupy (KVH 6×10 na płask) przykręcone do płyty wkrętami 6×100 #schody
@@ -51,8 +52,10 @@ Kolejność prac dla konstrukcji z [[Schody drewniane – projekt]]. Materiały 
 - [ ] Ramy z kantówki 45×45 (podwalina, oczep, słupki co ~40 cm), sklejone i skręcone #schody
 - [ ] Poszycie sklejką / OSB 18 obustronnie, klejone PU #schody
 - [ ] Ustawienie na płycie wg trasowania: ścianki pod podstopnicami (2 cm za linią czoła) + ścianki boczne. Przykręcić do płyty #schody
-- [ ] **S9** (10 cm, pod podstopnicą 9) z wierzchem dokładnie na poziomie stóp policzków #schody
-- [ ] Listwy oporowe pod tylnymi krawędziami sklejki stopni #schody
+- [ ] **S9**: podwójna rama 45×45 + sklejka od strony stopnia 8, pełne słupki pod stopami PZ i PW. Wierzch dokładnie na poziomie stóp policzków #schody
+- [ ] Listwy oporowe 45×45 na ściankach stopni 2–8, pod tylnymi krawędziami sklejki stopni 1–7 #schody
+- [ ] Ścianki pod podstopnicami wstawiać **między** ściankami bocznymi (nie na zakład) #schody
+- [ ] Przy stopniach 5–6 zostaje tylko ~4 cm do istniejącego słupa S-01. Słup zabezpieczyć (folia, tektura), nic do niego nie mocować #schody
 - ✅ **Kontrola:** wierzch każdej ścianki = poziom stopnicy − 4 cm (dąb) − 2,2 cm (sklejka), **±1 mm** (laser)
 - Sklejki 22 mm na stopnie 1–8 jeszcze nie przykręcać na stałe. Można położyć na sucho jako podest roboczy
 

@@ -33,6 +33,7 @@ Rysunki architektki (geometria): [[EKR schody (2).pdf]], [[EKR schody przekroj.p
 - **Strop pod schodami:** 3.1, żelbet gr. 18 cm, C25/30 (K-02, K-10). Zbrojenie jest standardowe: dołem Ø12 co 20–25, górą Ø12 co 25 przy podporach. **Nie ma dozbrojenia pod schody.** Wzdłuż ściany przy schodach strop opiera się jednak na **żelbetowej ścianie 3.12 gr. 18 cm** w lokalu poniżej. Cały bieg (0–1 m od ściany) leży więc tuż przy podporze, czyli w najkorzystniejszym miejscu stropu.
 - **Deweloper przewidział tu „samonośne / systemowe schody stalowe”** (TOM 1, K-03, IS-02.5). Na K-03 jest uwaga: *„w ścianie wykonać wzmocnienie pod schody zgodnie z zaleceniem Producenta”*. Warto zapytać dewelopera, czy i co wykonano.
 - **Ogrzewanie podłogowe nie omija schodów.** Pętla „A” (rozstaw 15 cm) biegnie pod całym obrysem biegu, do ok. 10 cm od ściany (IS-02.5). Potwierdza to, że w wylewkę nie wolno kotwić. Pod schodami ogrzewanie będzie grzało zamkniętą przestrzeń. Jeśli wylewka nie jest jeszcze wylana, można poprosić instalatora o ominięcie obrysu schodów.
+- **Istniejący słup stalowy S-01** (K-03, K-24, widoczny też na rzucie EKR): rura RO 139,7×5,0, L = 376 cm, blachy 200×200×12, od stropu 3.1 do spodu stropu 2.1 (antresoli). **Oś ok. 104 cm od ściany bliźniaka i 11 cm przed bokiem stopni 1–5, więc do boku stopni 5–6 zostaje ok. 4 cm.** Fronty kubików na tym odcinku się nie otworzą. To element nośny antresoli: nic do niego nie mocować, nie wiercić, nie spawać. Jest w modelu jako osobna warstwa.
 - **Opracowanie KLO** (wypełnienie otworu 240 × 319) dotyczy otworu w środku pomieszczenia, a nie strefy schodów. Ze schodami ma wspólny tylko detal (wieszaki + kotwy w krawędź stropu), który jest wzorem dla listwy L1.
 
 ## Idea konstrukcji
@@ -55,8 +56,9 @@ Do ściany zewnętrznej i okiennej nie jest kotwione nic. W wylewkę nic nie jes
 |---|---|---|---|
 | — | płyta pod całymi schodami | **OSB/3 2 × 22 mm** na krzyż, ok. 5,2 m² (4 arkusze) | luzem na wylewce, 1 cm od ściany zewn., klejona PU + wkręty co 20 cm |
 | — | podwaliny pod słupami | KVH 6×10 na płask | zewn. wzdłuż ściany (przez tył niszy), wewn. przerwana w wejściu do niszy |
-| S1–S8 | ścianki pod stopniami 1–8 | kantówka 45×45 + sklejka 18 obustronnie (gr. ~8 cm) | na płycie OSB |
-| S9 | ścianka pod podstopnicą 9 | jw., gr. 10 cm, h ≈ 139 cm | dźwiga tył stopnia 8 i stopy policzków |
+| S1–S8 | ścianki pod stopniami 1–8 | rama z kantówki 45×45 (podwalina, oczep, słupki co ≤ 40 cm) + sklejka / OSB 18 obustronnie (gr. 8,1 cm) | na płycie OSB; ścianki pod podstopnicami 2 cm za linią czoła, między ściankami bocznymi |
+| — | listwy oporowe | kantówka 45×45 | na ściance stopnia k+1, pod tylną krawędzią sklejki stopnia k (1–7) |
+| S9 | ścianka pod podstopnicą 9 | **podwójna** rama 45×45 (9 cm) + sklejka 18 od strony stopnia 8 (gr. ~11 cm), h ≈ 137 cm | dźwiga tył stopnia 8 i stopy policzków; pełne słupki pod PZ, PW i w środku |
 | PZ, PW | policzki zębate | **BSH GL24h 8×28**, dł. ~3,1 m netto (zamówić 3,5 m) | przekrój pod zębem 13,5 cm, **spodu nie podcinać** |
 | O1–O4, P3 | słupy zewnętrzne | KVH C24 10×10 | wolnostojące, 1,5 cm od ściany |
 | J1–J3, N1, P2 | słupy wewnętrzne | KVH 10×10 | skręcone ze słupkami ściany |
@@ -71,7 +73,7 @@ Do ściany zewnętrznej i okiennej nie jest kotwione nic. W wylewkę nic nie jes
 | — | podstopnice | dąb / MDF lakierowany 20 mm | wpuszczone pod nosek |
 
 **Ilości z modelu:** KVH/BSH ok. 0,78 m³, kantówka ok. 77 mb, sklejka 18 mm ok. 21 m² (w ściankach można użyć OSB 18), sklejka 22 mm ok. 3 m², OSB 22 mm na płytę 10,5 m², dąb 5,4 m² (21 stopnic), g-k ok. 25 m².
-**Ciężar:** drewno, sklejka, OSB i dąb ok. **1,07 t**, z g-k ok. **1,3 t**. Sama płyta OSB to ok. 145 kg, a podwaliny ok. 15 kg (słupy są o tyle krótsze). Na wylewkę daje to średnio **ok. 2,4 kPa stale i ok. 4,7 kPa z ludźmi na schodach**, czyli tyle co pełna szafa z książkami. Bieg żelbetowy ważyłby ok. 3× więcej.
+**Ciężar:** drewno, sklejka, OSB i dąb ok. **1,05 t**, z g-k ok. **1,3 t**. Sama płyta OSB to ok. 145 kg, a podwaliny ok. 15 kg (słupy są o tyle krótsze). Na wylewkę daje to średnio **ok. 2,4 kPa stale i ok. 4,7 kPa z ludźmi na schodach**, czyli tyle co pełna szafa z książkami. Bieg żelbetowy ważyłby ok. 3× więcej.
 
 ## Obliczenia wstępne (szacunkowe – do sprawdzenia)
 

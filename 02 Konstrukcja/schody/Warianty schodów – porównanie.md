@@ -14,7 +14,7 @@ Poza stalą rozważane były trzy warianty. Kluczowe ograniczenie to **strop pod
 
 | Wariant | Ciężar (szac.) | Samodzielnie | Ryzyko dla stropu | Komentarz |
 |---|---|---|---|---|
-| **Drewno – szkielet** | ~1,07 t (z g-k ~1,3 t), na płycie OSB rozkładającej nacisk (~2,4 kPa) | **tak** | niskie | konstrukcja schowana w zabudowie, wygląd jak w projekcie |
+| **Drewno – szkielet** | ~1,05 t (z g-k ~1,3 t), na płycie OSB rozkładającej nacisk (~2,4 kPa) | **tak** | niskie | konstrukcja schowana w zabudowie, wygląd jak w projekcie |
 | **Mur pod biegiem** (bloczki) | ~0,6–2 t liniowo, zależnie od materiału | tak (beton komórkowy) | średnie | jedna ściana podpiera tylko jedną krawędź biegu |
 | **Żelbet lany** | **~3–3,5 t** | trudne | **wysokie** | najlepszy w odbiorze, ale ciężar na strop nad sąsiadem |
 
