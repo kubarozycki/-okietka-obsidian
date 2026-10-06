@@ -9,9 +9,9 @@ tags: [konstrukcja, schody, drewno, koncepcja]
 
 **Model 3D z listą cięć:** `schody-drewno.html` (otwórz w przeglądarce). Przycisk *„Lista elementów i stopnic”* generuje arkusz do druku z drewnem wg przekroju, listą cięć, ściankami, sklejką, kształtami stopnic, podstopnicami i łącznikami. Parametry (grubość stopnicy, nosek, wysokość policzka, odsunięcie od ściany) przeliczają wszystko na bieżąco.
 
-**Lista zakupów** (drewno, płyty, łączniki z cięciem na sztangi): [[Schody drewniane – lista zakupów]]
+**Lista zakupów** (drewno, płyty, łączniki z cięciem na sztangi): [[Schody drewniane – lista zakupów]] · **Plan budowy:** [[Schody drewniane – plan budowy]]
 
-Wariant stalowy dla porównania: `schody.html` · Rysunki architektki: [[EKR schody (2).pdf]], [[EKR schody przekroj.pdf]]
+Rysunki architektki (geometria): [[EKR schody (2).pdf]], [[EKR schody przekroj.pdf]]. Konstrukcja jest drewniana zamiast stalowej z opisu EKR, co trzeba uzgodnić z architektką.
 
 ---
 
@@ -37,7 +37,7 @@ Wariant stalowy dla porównania: `schody.html` · Rysunki architektki: [[EKR sch
 
 ## Idea konstrukcji
 
-Przestrzeń pod biegiem jest **zamknięta** z trzech stron: ścianą zewnętrzną, ścianą g-k i samymi schodami. Dzięki temu konstrukcja nie musi „lewitować”. Wszystko można podeprzeć od dołu słupami i ściankami schowanymi w zabudowie. Dlatego zamiast smukłej stali wystarczy zwykła ciesielka.
+Przestrzeń pod biegiem jest **zamknięta** z trzech stron: ścianą zewnętrzną, ścianą g-k i samymi schodami. Dzięki temu konstrukcja nie musi „lewitować”. Wszystko można podeprzeć od dołu słupami i ściankami schowanymi w zabudowie. Dlatego wystarczy zwykła ciesielka.
 
 Całość składa się z pięciu części:
 
@@ -57,7 +57,7 @@ Do ściany zewnętrznej i okiennej nie jest kotwione nic. W wylewkę nic nie jes
 | — | podwaliny pod słupami | KVH 6×10 na płask | zewn. wzdłuż ściany (przez tył niszy), wewn. przerwana w wejściu do niszy |
 | S1–S8 | ścianki pod stopniami 1–8 | kantówka 45×45 + sklejka 18 obustronnie (gr. ~8 cm) | na płycie OSB |
 | S9 | ścianka pod podstopnicą 9 | jw., gr. 10 cm, h ≈ 139 cm | dźwiga tył stopnia 8 i stopy policzków |
-| PZ, PW | policzki zębate | **BSH GL24h 8×28**, dł. ~3,35 m | przekrój pod zębem 13,5 cm |
+| PZ, PW | policzki zębate | **BSH GL24h 8×28**, dł. ~3,1 m netto (zamówić 3,5 m) | przekrój pod zębem 13,5 cm, **spodu nie podcinać** |
 | O1–O4, P3 | słupy zewnętrzne | KVH C24 10×10 | wolnostojące, 1,5 cm od ściany |
 | J1–J3, N1, P2 | słupy wewnętrzne | KVH 10×10 | skręcone ze słupkami ściany |
 | R | rygle stężające słup ↔ słup/ściana | KVH 6×10 | na wys. ~1,22 m (nad niszą) i 2,4 m |
@@ -95,25 +95,14 @@ Przyjęto obciążenie użytkowe 3,0 kN/m² (bezpiecznie dla schodów w budynku 
 - **Płyta OSB:** obie warstwy na krzyż, styki przesunięte o min. 60 cm, klej PU na całej powierzchni. Płyta ma w całości mostkować dylatacje wylewki, a żaden słup nie może wypaść nad dylatacją. Pod schodami ogrzewanie podłogowe będzie słabo grzało, co tam nie przeszkadza.
 - **Skrzypienie:** sklejka klejona PU i wkręcana, stopnice klejone elastycznie (MS/PU), podstopnice wpuszczone pod nosek i klejone. Nic nie może pracować na samych gwoździach.
 - **Drewno suche:** KVH/BSH suszone komorowo (≤ 15 %), dąb aklimatyzowany ok. 2 tygodnie na miejscu. Montaż dopiero po tynkach i wylewkach.
+- **Głowice słupów pod policzkami (O1–O3, J1–J3, N1):** docięte skośnie pod spód policzka, **≈ 37°** (arctan 18,19/24). Odrysować na miejscu z zamontowanego policzka, na lekki wcisk, bez luzu (ewentualnie twardy klin lub sklejka na kleju). Mocowanie: 2 kątowniki albo wkręt 8×240 skośnie przez policzek. **Policzka od spodu nie podcinać**, bo pod zębami zostaje tylko 13,5 cm przekroju. Słupy pod belkami (O4, P3, P2) mają głowice proste.
 - **Szablon policzka:** zęby 18,19 / 24 cm rysowane kątownikiem ciesielskim z przykładnicami. Najpierw jeden policzek próbny z tańszej deski albo przymiarka na sucho.
 - **Równe podniesienia:** poziomy wszystkich 21 stopnic warto narysować laserem na ścianie przed cięciem. Pierwsze i ostatnie podniesienie zależą od gotowej posadzki dołu i antresoli.
 - **Ściana wewnętrzna ma ~14 cm** (g-k 1,25 + szkielet 10 + 2 × g-k 1,25) zamiast 5 cm z projektu EKR. Zabiera ok. 9 cm pokojowi pod antresolą.
 
 ## Kolejność wykonania
 
-1. **Pomiary:** gotowe poziomy posadzek (dół i antresola), rzeczywista krawędź stropu antresoli, przebieg dylatacji w wylewce pod schodami, odległość od ściany okiennej.
-2. **Konstruktor:** zatwierdzenie układu, kotwienia L1 i obciążenia stropu pod spodem.
-3. Zakup i aklimatyzacja drewna.
-4. Trasowanie: linia ściany, pozycje słupów, poziomy stopni (laser).
-5. **Płyta OSB:** dwie warstwy na krzyż, klej PU i wkręty, potem podwaliny pod słupami.
-6. **Ściana szkieletowa:** podwalina przykręcona do płyty, słupki, oczep do stropu (taśma elastomerowa), nadproże nad niszą.
-7. **Ścianki S1–S9** ze sklejką (dół schodów, kubiki).
-8. **Słupy** O/J/N/P i rygle.
-9. **Policzki:** szablon, cięcie, przymiarka, montaż (stopa na S9, koniec na O3/N1).
-10. **Zabiegowe 19–21:** J19, J19h, Lz19, B1 na P3/P2, sklejka 19, potem J20, Lz20, Lw20, sklejka 20, potem J21, Lw21, L1 (kotwy), sklejka 21.
-11. **Próba:** chodzenie po sklejce i poprawki skrzypienia, zanim cokolwiek zostanie zakryte.
-12. Instalacje (LED w pochwycie), wełna, g-k, szpachlowanie, malowanie.
-13. Na końcu podstopnice, stopnice, pochwyt i fronty kubików.
+Pełny plan z kontrolami po każdym etapie jest w [[Schody drewniane – plan budowy]]. W skrócie: przygotowanie i pomiary → zakupy i aklimatyzacja → trasowanie i płyta OSB → ściana szkieletowa → ścianki S1–S9 → **policzki na podporach tymczasowych** → **słupy docinane pod policzki** i rygle → zabiegowe 19–21 → próba chodzenia (nic nie zakrywać wcześniej) → instalacje i okładzina → dąb i wykończenie.
 
 **Narzędzia:** ukośnica + pilarka ręczna, zagłębiarka z szyną (sklejka, zęby policzków), wkrętarka udarowa (wkręty 8×200), młotowiertarka (kotwy), laser krzyżowy, kątownik ciesielski z przykładnicami, ściski. Frezarka górnowrzecionowa przyda się do stopnic.
 

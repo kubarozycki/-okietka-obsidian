@@ -2,28 +2,23 @@
 tags: [konstrukcja, schody, decyzje]
 ---
 
-# 🪜 Schody EKR – porównanie wariantów konstrukcji
+# 🪜 Schody EKR – decyzja: konstrukcja drewniana
 
-Schody prowadzą z ±0,00 na antresolę +3,82: 21 podniesień po ok. 18,2 cm, szerokość biegu 90 cm, zabiegowe na dole i na górze. Pod biegiem jest nisza dla psa. Projekt architektki zakłada konstrukcję **stalową, niezależną od ściany zewnętrznej** ([[EKR schody (2).pdf]], [[EKR schody przekroj.pdf]]).
+Schody prowadzą z ±0,00 na antresolę +3,82: 21 podniesień po ok. 18,2 cm, szerokość biegu 90 cm, zabiegowe na dole i na górze. Pod biegiem jest nisza dla psa. Geometria pochodzi z projektu architektki ([[EKR schody (2).pdf]], [[EKR schody przekroj.pdf]]).
 
-Rozważane były cztery warianty. Kluczowe ograniczenie to **strop pod schodami**: mieszkanie jest na piętrze, a pod spodem jest lokal sąsiada. Liczy się więc nie tylko wykonanie, ale też ciężar.
+**Decyzja: schody budujemy z drewna, samodzielnie.** Wariant stalowy z projektu EKR został odrzucony (wymagałby ślusarza). Poniżej zostaje uzasadnienie, dlaczego nie mur ani żelbet.
+
+Poza stalą rozważane były trzy warianty. Kluczowe ograniczenie to **strop pod schodami**: mieszkanie jest na piętrze, a pod spodem jest lokal sąsiada. Liczy się więc nie tylko wykonanie, ale też ciężar.
 
 ## Podsumowanie
 
 | Wariant | Ciężar (szac.) | Samodzielnie | Ryzyko dla stropu | Komentarz |
 |---|---|---|---|---|
-| **Stal** (projekt EKR) | ~0,3–0,5 t + mur stopni 1–8 | raczej nie (spawanie, ślusarz) | niskie | najsmuklejsza, „lewitująca”; wymaga projektu i wykonawcy |
 | **Drewno – szkielet** | ~1,07 t (z g-k ~1,3 t), na płycie OSB rozkładającej nacisk (~2,4 kPa) | **tak** | niskie | konstrukcja schowana w zabudowie, wygląd jak w projekcie |
 | **Mur pod biegiem** (bloczki) | ~0,6–2 t liniowo, zależnie od materiału | tak (beton komórkowy) | średnie | jedna ściana podpiera tylko jedną krawędź biegu |
 | **Żelbet lany** | **~3–3,5 t** | trudne | **wysokie** | najlepszy w odbiorze, ale ciężar na strop nad sąsiadem |
 
-**Kierunek:** wariant drewniany. Szczegóły są w [[Schody drewniane – projekt]], a model 3D z listą cięć to `schody-drewno.html`.
-
-## Stal – projekt EKR
-
-- Stopnie 1–8 murowane (bloczek / pustak), 9–21 na stalowych policzkach z blachy z kasetami stopni, słupy i belki RHS schowane w zabudowie g-k. Model koncepcyjny: `schody.html`.
-- Zaleta: smukła konstrukcja, niezależna od ściany zewnętrznej, mały ciężar.
-- Wady: potrzebny ślusarz i projekt konstrukcyjny, a na rysunku zabudowa g-k ma tylko 5 cm, w których słupy 50 mm i płyty się nie zmieszczą (realnie ≥ 8–10 cm).
+**Wybrany:** wariant drewniany. Szczegóły są w [[Schody drewniane – projekt]], a model 3D z listą cięć to `schody-drewno.html`.
 
 ## Drewno – szkielet w zabudowie
 

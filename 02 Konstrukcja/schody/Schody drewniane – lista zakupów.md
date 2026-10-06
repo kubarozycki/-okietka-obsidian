@@ -28,7 +28,7 @@ Najprościej zamówić w składzie **cięte na wymiar** według kolumny „Cięc
 | Poz. | Materiał | Ilość | Sztangi (propozycja) | Cięcie / elementy (cm) | Cena |
 |---|---|---|---|---|---|
 | D1 | **BSH GL24h NSi 80×280** | 2 szt. | 2 × 3,5 m | PZ, PW – policzki, netto ~309 cm wzdłuż skosu | 700–1 000 zł |
-| D2 | **KVH C24 100×100** (lub BSH 100×100) | 10 elementów, ~25 mb | 8 × 3,3 m + 1 × 3,0 m | P3 318, P2 318, O4 316, O3 297, N1 297, J3 252, O2 214, J2 214 (każde z osobnej 3,3 m) · O1 131 + J1 131 (z 3,0 m) | 650–950 zł |
+| D2 | **KVH C24 100×100** (lub BSH 100×100) | 10 elementów, ~25 mb | 8 × 3,3 m + 1 × 3,0 m | P3 318, P2 318, O4 316, O3 305, N1 305, J3 259, O2 222, J2 222 (każde z osobnej 3,3 m) · O1 139 + J1 139 (z 3,0 m). **O1–O3, J1–J3, N1: głowica skośna ≈ 37°**, długość po dłuższej krawędzi, docinać na miejscu pod policzek | 650–950 zł |
 | D3 | **KVH C24 60×100** | ~50 mb | 14 × 3,6 m | 7 × słupek ściany 348 · oczep 329 · podwalina zewn. 314 + podwalina wewn. 16 · podwalina wewn. 198 + słupek pod nadprożem 112 + podwalina ściany 31 · podwalina ściany 198 + słupek pod nadprożem 112 · słupek nad nadprożem 216 + 2 × rygiel 70 · rygle 70+70+70+80 · rygle 70+80 | 700–1 050 zł |
 | D4 | **KVH C24 60×160** | ~9 mb | 2 × 4,5 m (zapas na skośne cięcia) | J19h 103, J20 103, Lw20 90, J19 89 · J20h 91, J21 87, Lw21 59, Lz19 45, Lz20 24, L1 89 (L1 przeciąć wzdłużnie na 138 mm) | 180–260 zł |
 | D5 | **KVH C24 100×200** | 1 szt. | 1 × 2,2 m | nadproże nad niszą 112 · B1 90 (przyciąć na 160 mm albo zostawić 200 i skrócić P2/P3 o 4 cm) | 100–150 zł |

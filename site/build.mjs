@@ -10,16 +10,16 @@ const SCHODY = '02 Konstrukcja/schody';
 const SITE_TITLE = 'Łokietka · schody';
 
 const PAGES = [
-  { slug: 'warianty', nav: 'Warianty', kind: 'md', src: `${SCHODY}/Warianty schodów – porównanie.md`,
-    desc: 'Stal, drewno, mur czy żelbet – porównanie ciężaru, wykonania i ryzyka dla stropu.' },
   { slug: 'projekt-drewniany', nav: 'Projekt drewniany', kind: 'md', src: `${SCHODY}/Schody drewniane – projekt.md`,
     desc: 'Wybrany wariant: elementy, przekroje, obliczenia wstępne, kolejność robót, koszty, pytania do konstruktora.' },
+  { slug: 'plan-budowy', nav: 'Plan budowy', kind: 'md', src: `${SCHODY}/Schody drewniane – plan budowy.md`,
+    desc: 'Kolejność prac od pomiarów do dębu: 11 etapów z checklistami i kontrolą poziomów po każdym kroku.' },
   { slug: 'lista-zakupow', nav: 'Lista zakupów', kind: 'md', src: `${SCHODY}/Schody drewniane – lista zakupów.md`,
     desc: 'Drewno, płyty i łączniki na konstrukcję drewnianą: ilości, cięcia na sztangi, ceny i checklista. Plus BSH, KVH czy LVL.' },
-  { slug: 'model-drewno', nav: 'Model 3D – drewno', kind: 'model', src: `${SCHODY}/schody-drewno.html`,
+  { slug: 'model-drewno', nav: 'Model 3D', kind: 'model', src: `${SCHODY}/schody-drewno.html`,
     desc: 'Interaktywny model szkieletu drewnianego z listą cięć, stopnicami i zestawieniem materiałów do druku.' },
-  { slug: 'model-stal', nav: 'Model 3D – stal', kind: 'model', src: `${SCHODY}/schody.html`,
-    desc: 'Model wariantu z projektu EKR: stopnie 1–8 murowane, 9–21 na stalowej konstrukcji samonośnej.' },
+  { slug: 'decyzja', nav: 'Decyzja', kind: 'md', src: `${SCHODY}/Warianty schodów – porównanie.md`,
+    desc: 'Dlaczego drewno: porównanie z biegiem żelbetowym i murowanym pod kątem ciężaru i stropu nad sąsiadem.' },
 ];
 const FILES = [
   { src: `${SCHODY}/EKR schody (2).pdf`, out: 'pliki/ekr-schody-rzut.pdf', name: 'EKR – rzut schodów (PDF)' },
@@ -144,12 +144,12 @@ function indexBody() {
   return `
     <header class="hero">
       <h1>Schody na antresolę</h1>
-      <p class="lead">Mieszkanie EKR, budynek B1/C1, ul. Łokietka w Krakowie. Bieg na wysokość 3,82 m (21 × 18,2 cm), szerokość 90 cm, zabiegowe na dole i na górze, pod biegiem nisza dla psa. Tu są zebrane warianty konstrukcji, projekt wybranego wariantu drewnianego i interaktywne modele 3D.</p>
+      <p class="lead">Mieszkanie EKR, budynek B1/C1, ul. Łokietka w Krakowie. Bieg na wysokość 3,82 m (21 × 18,2 cm), szerokość 90 cm, zabiegowe na dole i na górze, pod biegiem nisza dla psa. Budujemy samodzielnie z drewna. Tu jest projekt konstrukcji, plan budowy, lista zakupów i interaktywny model 3D.</p>
     </header>
     <div class="cards">${cards}</div>
     <h2 class="section">Rysunki źródłowe</h2>
     <ul class="files">${files}</ul>
-    <p class="hint">Modele 3D wymagają przeglądarki z WebGL. Obsługa: lewy przycisk obraca, prawy przesuwa, kółko przybliża. Arkusz z listą elementów otwiera się przyciskiem w panelu bocznym i można go wydrukować do PDF.</p>`;
+    <p class="hint">Model 3D wymaga przeglądarki z WebGL. Obsługa: lewy przycisk obraca, prawy przesuwa, kółko przybliża. Arkusz z listą elementów otwiera się przyciskiem w panelu bocznym i można go wydrukować do PDF.</p>`;
 }
 
 // ── Budowa ───────────────────────────────────────────────────

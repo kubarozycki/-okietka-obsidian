@@ -574,15 +574,25 @@ function build() {
      'kotwy mechaniczne w czoło stropu wg konstruktora');
 
   // — Słupy 10×10 ——————————————————————————————————————————————
+  // słupy pod policzkami (sl) mają głowicę dociętą skośnie pod spód policzka – policzka od spodu nie podcinamy
+  const ANG = Math.atan(H / G) * 180 / Math.PI;
   const posts = [
-    ['O1', PO0, PO1, 111, 121, zb(111)], ['O2', PO0, PO1, 221, 231, zb(221)], ['O3', PO0, PO1, 330, 340, zb(330)],
+    ['O1', PO0, PO1, 111, 121, zb(111), true], ['O2', PO0, PO1, 221, 231, zb(221), true], ['O3', PO0, PO1, 330, 340, zb(330), true],
     ['O4', PO0, PO1, 375, 385, bT(18)],  ['P3', PO0, PO1, 409, 419, zJ],
-    ['J1', PJ0, PJ1, 111, 121, zb(111)], ['J2', PJ0, PJ1, 221, 231, zb(221)], ['J3', PJ0, PJ1, 270, 280, zb(270)],
-    ['N1', PJ0, PJ1, 330, 340, zb(330)], ['P2', PJ0, PJ1, 409, 419, zJ],
+    ['J1', PJ0, PJ1, 111, 121, zb(111), true], ['J2', PJ0, PJ1, 221, 231, zb(221), true], ['J3', PJ0, PJ1, 270, 280, zb(270), true],
+    ['N1', PJ0, PJ1, 330, 340, zb(330), true], ['P2', PJ0, PJ1, 409, 419, zJ],
   ];
-  for (const [n, x0, x1, y0, y1, z1] of posts)
-    bx(gp, `${n} – słup`, 'KVH 10×10', x0, x1, y0, y1, ZS, z1, M.post, z1 - ZS,
-       n[0] === 'O' || n === 'P3' ? 'wolnostojący, 1,5 cm od ściany zewn.' : 'skręcony ze słupkiem ściany');
+  for (const [n, x0, x1, y0, y1, z1, sl] of posts) {
+    const where = n[0] === 'O' || n === 'P3' ? 'wolnostojący, 1,5 cm od ściany zewn.' : 'skręcony ze słupkiem ściany';
+    if (sl) {
+      const zt0 = zb(y0), zt1 = zb(y1), cut = zt1 - zt0 > 0.5;
+      prismYZ(gp, [[y0, ZS], [y1, ZS], [y1, zt1], [y0, zt0]], x0, x1, M.post);
+      piece(`${n} – słup`, 'KVH 10×10', zt1 - ZS,
+            `${cut ? `głowica skośna ${fmt(ANG)}° (dł. po dłuższej krawędzi)` : 'głowica prosta (pod płaską stopą policzka)'} – odrysować ze spodu policzka · ${where}`);
+    } else {
+      bx(gp, `${n} – słup`, 'KVH 10×10', x0, x1, y0, y1, ZS, z1, M.post, z1 - ZS, `głowica prosta pod belkę · ${where}`);
+    }
+  }
 
   // — Rygle stężające: słup zewnętrzny ↔ słup wewnętrzny / ściana ————————
   const grg = grp('rygle');
