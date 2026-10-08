@@ -142,7 +142,7 @@
 
 /* checklista */
 .tasks { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
-.tasks li { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); margin: 0; }
+ul.tasks > li { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); margin: 0; }
 .tasks li.done .tx { text-decoration: line-through; color: var(--muted); }
 .tasks input[type="checkbox"] { width: 18px; height: 18px; margin: 0; accent-color: var(--ok); }
 .tasks .tx { flex: 1; }

@@ -61,7 +61,7 @@ function bar(active) {
   const t = totals();
   const tab = (href, label, id) => `<a href="${href}"${active === id ? ' aria-current="page"' : ''}>${label}</a>`;
   return `<div class="bar">
-    <div><h1>${esc(P.name)}</h1><div class="sub">${esc(P.subtitle)} · projekt: ${esc(P.designer)}</div></div>
+    <div><h1>${esc(P.name)}</h1><div class="sub">${esc(P.subtitle)}</div></div>
     <nav class="tabs" aria-label="Poziomy">${DATA.levels.map(l => tab(`#/plan/${l.id}`, l.name, l.id)).join('')}${tab('#/podsumowanie', 'Podsumowanie', 'sum')}</nav>
     <div class="kpis"><span class="kpi">Budżet: <b>${money(t.sel)}</b></span><span class="kpi">Zaakceptowane: <b>${t.apOk}/${t.ap}</b></span><span class="kpi">Zadania: <b>${t.tkOk}/${t.tk}</b></span></div>
   </div>${DATA.productsSource === 'sample' ? `<p class="banner">Produkty to próbka pierwszych pozycji z arkusza „Zestawienie”. Pełna lista pojawi się po wczytaniu arkusza.</p>` : ''}`;
@@ -137,8 +137,8 @@ function viewRoom(id, anchor) {
   }).join('')}</section>` : '';
 
   const rys = r.drawings.length ? `<section class="section" id="rys"><h3>Rysunki</h3><div class="drawings">${r.drawings.map((d, k) => `<div class="drawing">
-      <a class="pv" href="${d.href}" target="_blank" rel="noopener" style="background-image:url('${d.thumb}')" aria-label="Otwórz PDF: ${esc(d.title)}"></a>
-      <div class="b"><span class="t">${esc(d.title)}</span><div class="row"><a class="btn small" href="${d.href}" target="_blank" rel="noopener">Otwórz PDF</a>${approveBtn(`${r.id}:d${k}`, true)}</div></div></div>`).join('')}</div></section>` : '';
+      <a class="pv" href="${d.href}" target="_blank" rel="noopener" style="background-image:url('${d.thumb}')" aria-label="Otwórz rysunek: ${esc(d.title)}"></a>
+      <div class="b"><span class="t">${esc(d.title)}</span><div class="row"><a class="btn small" href="${d.href}" target="_blank" rel="noopener">Otwórz rysunek</a>${approveBtn(`${r.id}:d${k}`, true)}</div></div></div>`).join('')}</div></section>` : '';
 
   const delta = b.sel - b.rec;
   const prod = r.products.length ? `<section class="section" id="prod"><h3>Produkty <small>wybierz wariant – budżet liczy się na bieżąco</small></h3>
@@ -251,7 +251,7 @@ function viewSummary() {
     if (act === 'mail') {
       await navigator.clipboard.writeText(text).catch(() => {});
       const body = text.length > 1800 ? `${text.slice(0, 1700)}\n…\n(pełne podsumowanie jest w schowku – wklej je tutaj)` : text;
-      location.href = `mailto:${encodeURIComponent(P.designerEmail)}?subject=${encodeURIComponent(`${P.name} – decyzje i uwagi`)}&body=${encodeURIComponent(body)}`;
+      location.href = `mailto:${encodeURIComponent(P.designerEmail || '')}?subject=${encodeURIComponent(`${P.name} – decyzje i uwagi`)}&body=${encodeURIComponent(body)}`;
     }
     if (act === 'export') {
       const blob = new Blob([JSON.stringify({ project: P.id, exported: new Date().toISOString(), state: S }, null, 1)], { type: 'application/json' });

@@ -1,13 +1,10 @@
 {
- "generated": "2026-10-08T06:48:56.409Z",
+ "generated": "2026-10-08T07:00:30.184Z",
  "productsSource": "sample",
  "project": {
-  "id": "ekr-lokietka",
-  "name": "Mieszkanie EKR",
-  "subtitle": "ul. Łokietka, Kraków",
-  "designer": "Anna Krzak Studio",
-  "designerEmail": "annakrzakstudio@gmail.com",
-  "client": "Ewa i Kuba Różyccy",
+  "id": "mieszkanie",
+  "name": "Mieszkanie",
+  "subtitle": "projekt wnętrz",
   "currency": "zł"
  },
  "tiers": [
@@ -155,8 +152,8 @@
    "compare": [],
    "drawings": [
     {
-     "href": "tour/files/salon-rys1.pdf",
-     "thumb": "tour/media/salon-rys1-pdf.jpg",
+     "href": "tour/files/salon-rys1.jpg",
+     "thumb": "tour/media/salon-rys1-rys.jpg",
      "title": "Układ funkcjonalny i elektryka – parter"
     }
    ],
@@ -372,13 +369,13 @@
    "compare": [],
    "drawings": [
     {
-     "href": "tour/files/schody-rys1.pdf",
-     "thumb": "tour/media/schody-rys1-pdf.jpg",
+     "href": "tour/files/schody-rys1.jpg",
+     "thumb": "tour/media/schody-rys1-rys.jpg",
      "title": "Schody – rzut"
     },
     {
-     "href": "tour/files/schody-rys2.pdf",
-     "thumb": "tour/media/schody-rys2-pdf.jpg",
+     "href": "tour/files/schody-rys2.jpg",
+     "thumb": "tour/media/schody-rys2-rys.jpg",
      "title": "Schody – przekrój"
     }
    ],
@@ -648,18 +645,18 @@
    "compare": [],
    "drawings": [
     {
-     "href": "tour/files/lazienka-gora-rys1.pdf",
-     "thumb": "tour/media/lazienka-gora-rys1-pdf.jpg",
+     "href": "tour/files/lazienka-gora-rys1.jpg",
+     "thumb": "tour/media/lazienka-gora-rys1-rys.jpg",
      "title": "Łazienka górna – rzut"
     },
     {
-     "href": "tour/files/lazienka-gora-rys2.pdf",
-     "thumb": "tour/media/lazienka-gora-rys2-pdf.jpg",
+     "href": "tour/files/lazienka-gora-rys2.jpg",
+     "thumb": "tour/media/lazienka-gora-rys2-rys.jpg",
      "title": "Widoki A i B"
     },
     {
-     "href": "tour/files/lazienka-gora-rys3.pdf",
-     "thumb": "tour/media/lazienka-gora-rys3-pdf.jpg",
+     "href": "tour/files/lazienka-gora-rys3.jpg",
+     "thumb": "tour/media/lazienka-gora-rys3-rys.jpg",
      "title": "Widoki C i D"
     }
    ],
@@ -738,8 +735,8 @@
    "compare": [],
    "drawings": [
     {
-     "href": "tour/files/sypialnia-rys1.pdf",
-     "thumb": "tour/media/sypialnia-rys1-pdf.jpg",
+     "href": "tour/files/sypialnia-rys1.jpg",
+     "thumb": "tour/media/sypialnia-rys1-rys.jpg",
      "title": "Układ funkcjonalny – piętro"
     }
    ],
@@ -933,8 +930,8 @@
    ]
   },
   {
-   "id": "tadzio",
-   "name": "Pokój Tadzia",
+   "id": "dziecko",
+   "name": "Pokój dziecięcy",
    "level": "pietro",
    "poly": [
     [
@@ -961,7 +958,7 @@
    "drawings": [],
    "products": [
     {
-     "id": "tadzio-p1",
+     "id": "dziecko-p1",
      "name": "Łóżko 90×200 z materacem",
      "qty": 1,
      "rec": "sredni",
@@ -982,7 +979,7 @@
      }
     },
     {
-     "id": "tadzio-p2",
+     "id": "dziecko-p2",
      "name": "Biurko",
      "qty": 1,
      "rec": "tani",
@@ -1003,7 +1000,7 @@
      }
     },
     {
-     "id": "tadzio-p3",
+     "id": "dziecko-p3",
      "name": "Krzesło",
      "qty": 1,
      "rec": null,
@@ -1011,7 +1008,7 @@
      "options": {}
     },
     {
-     "id": "tadzio-p4",
+     "id": "dziecko-p4",
      "name": "Materac",
      "qty": 1,
      "rec": null,

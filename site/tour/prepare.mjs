@@ -70,20 +70,24 @@ function pair(srcA, srcB, slug) {
   return outs.map(o => { const [w, h] = dims(o); const rel = `tour/media/${path.basename(o)}`; return { src: rel, thumb: rel.replace('.jpg', '-t.jpg'), w, h }; });
 }
 
-// rysunek PDF: kopia + miniatura pierwszej strony
+// rysunek PDF → obraz pierwszej strony z zamaskowaną tabelką rysunkową (nazwiska, adres inwestycji);
+// PDF-y nie są publikowane. mask = [x0, y0, x1, y1] jako ułamki strony (szablon A3 projektantki)
+const TITLE_BLOCK = cfg.drawingMask || [0.745, 0.745, 0.99, 0.975];
 function drawing(src, slug) {
   const abs = resolve(src);
   if (!abs) { warn(`brak pliku: ${src}`); return null; }
-  const pdf = path.join(FILES, `${slug}.pdf`), th = path.join(MEDIA, `${slug}-pdf.jpg`);
-  used.add(pdf); used.add(th);
-  if (!fresh(pdf, abs)) fs.copyFileSync(abs, pdf);
-  if (!fresh(th, abs)) {
-    const tmp = path.join(MEDIA, `${slug}-tmp`);
-    run('pdftoppm', ['-r', '60', '-png', '-singlefile', abs, tmp]);
-    run('magick', [`${tmp}.png`, '-fuzz', '2%', '-trim', '+repage', '-resize', '640x640>', '-quality', '75', th]);
+  const img = path.join(FILES, `${slug}.jpg`), th = path.join(MEDIA, `${slug}-rys.jpg`);
+  used.add(img); used.add(th);
+  if (!fresh(img, abs)) {
+    const tmp = path.join(FILES, `${slug}-tmp`);
+    run('pdftoppm', ['-r', '130', '-png', '-singlefile', abs, tmp]);
+    const [w, h] = dims(`${tmp}.png`), [x0, y0, x1, y1] = TITLE_BLOCK;
+    run('magick', [`${tmp}.png`, '-fill', 'white', '-draw', `rectangle ${Math.round(x0 * w)},${Math.round(y0 * h)} ${Math.round(x1 * w)},${Math.round(y1 * h)}`,
+      '-strip', '-quality', '82', '-interlace', 'JPEG', img]);
     fs.rmSync(`${tmp}.png`);
+    run('magick', [img, '-fuzz', '2%', '-trim', '+repage', '-resize', '640x640>', '-quality', '75', th]);
   }
-  return { href: `tour/files/${slug}.pdf`, thumb: `tour/media/${slug}-pdf.jpg` };
+  return { href: `tour/files/${slug}.jpg`, thumb: `tour/media/${slug}-rys.jpg` };
 }
 
 // rzut: wycinek PDF renderowany w 2× dpi (ostry na ekranach retina), współrzędne obrysów w 1× dpi

@@ -1,11 +1,8 @@
 {
   "project": {
-    "id": "ekr-lokietka",
-    "name": "Mieszkanie EKR",
-    "subtitle": "ul. Łokietka, Kraków",
-    "designer": "Anna Krzak Studio",
-    "designerEmail": "annakrzakstudio@gmail.com",
-    "client": "Ewa i Kuba Różyccy",
+    "id": "mieszkanie",
+    "name": "Mieszkanie",
+    "subtitle": "projekt wnętrz",
     "currency": "zł"
   },
   "tiers": [
@@ -148,7 +145,7 @@
       "tasks": ["Wybrać fotele", "Wycenić komodę u stolarza"]
     },
     {
-      "id": "tadzio", "name": "Pokój Tadzia", "level": "pietro", "sheet": "Pokój Tadzio",
+      "id": "dziecko", "name": "Pokój dziecięcy", "level": "pietro", "sheet": "Pokój Tadzio",
       "poly": [[540, 600], [1050, 600], [1050, 1035], [540, 1035]],
       "intro": "Pokój dziecięcy: łóżko 90×200, biurko, krzesło.",
       "renders": [],

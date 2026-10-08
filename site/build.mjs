@@ -7,7 +7,7 @@ import path from 'node:path';
 const ROOT = path.resolve(import.meta.dirname, '..');
 const OUT = path.join(ROOT, '_site');
 const SCHODY = '02 Konstrukcja/schody';
-const SITE_TITLE = 'Łokietka';
+const SITE_TITLE = 'Mieszkanie';
 
 const PAGES = [
   { slug: 'mieszkanie', nav: 'Mieszkanie', kind: 'app', src: 'site/tour/index.html',
@@ -24,15 +24,16 @@ const PAGES = [
     desc: 'Dlaczego drewno: porównanie z biegiem żelbetowym i murowanym pod kątem ciężaru i stropu nad sąsiadem.' },
 ];
 const FILES = [
-  { src: `${SCHODY}/EKR schody (2).pdf`, out: 'pliki/ekr-schody-rzut.pdf', name: 'EKR – rzut schodów (PDF)' },
-  { src: `${SCHODY}/EKR schody przekroj.pdf`, out: 'pliki/ekr-schody-przekroj.pdf', name: 'EKR – przekrój schodów (PDF)' },
+  // rysunki publikowane jako obrazy z zamaskowaną tabelką (przygotowuje tour/prepare.mjs); klucz = nazwa oryginału w vaulcie
+  { src: 'site/tour/files/schody-rys1.jpg', out: 'pliki/schody-rzut.jpg', name: 'Schody – rzut (rysunek projektantki)', key: 'EKR schody (2).pdf' },
+  { src: 'site/tour/files/schody-rys2.jpg', out: 'pliki/schody-przekroj.jpg', name: 'Schody – przekrój (rysunek projektantki)', key: 'EKR schody przekroj.pdf' },
 ];
 
 // Odnośniki [[...]] i `plik.html` z notatek → adresy na stronie
 const LINKS = new Map([
   ...PAGES.map(p => [path.basename(p.src).replace(/\.md$/, ''), `${p.slug}.html`]),
   ...PAGES.map(p => [path.basename(p.src), `${p.slug}.html`]),
-  ...FILES.map(f => [path.basename(f.src), f.out]),
+  ...FILES.map(f => [f.key, f.out]),
 ]);
 
 const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -146,14 +147,27 @@ function indexBody() {
   const files = FILES.map(f => `<li><a href="${f.out}">${f.name}</a></li>`).join('');
   return `
     <header class="hero">
-      <h1>Mieszkanie EKR</h1>
-      <p class="lead">Budynek B1/C1, ul. Łokietka w Krakowie. <b>Mieszkanie</b> to apartment tour po projekcie wnętrz: rzut, wizualizacje, rysunki, wybór produktów z budżetem i decyzje dla projektantki. Pozostałe strony dotyczą <b>schodów na antresolę</b> (3,82 m, 21 × 18,2 cm), które budujemy samodzielnie z drewna: projekt konstrukcji, plan budowy, lista zakupów i model 3D.</p>
+      <h1>Mieszkanie</h1>
+      <p class="lead"><b>Mieszkanie</b> to apartment tour po projekcie wnętrz: rzut, wizualizacje, rysunki, wybór produktów z budżetem i decyzje dla projektantki. Pozostałe strony dotyczą <b>schodów na antresolę</b> (3,82 m, 21 × 18,2 cm), które budujemy samodzielnie z drewna: projekt konstrukcji, plan budowy, lista zakupów i model 3D.</p>
     </header>
     <div class="cards">${cards}</div>
     <h2 class="section">Rysunki źródłowe</h2>
     <ul class="files">${files}</ul>
     <p class="hint">Model 3D wymaga przeglądarki z WebGL. Obsługa: lewy przycisk obraca, prawy przesuwa, kółko przybliża. Arkusz z listą elementów otwiera się przyciskiem w panelu bocznym i można go wydrukować do PDF.</p>`;
 }
+
+// ── Bez nazwisk i adresów w publikowanym HTML ─────────────────
+// Notatki w vaulcie zostają bez zmian, a publikowana strona nie zawiera danych osobowych ani adresu.
+const PRIVATE = [
+  [/\s*\(mgr inż\. Łukasz Sekuła[^)]*\)/g, ''], [/mgr inż\. Łukasz Sekuła|Łukasz Sekuła|Sekuła/g, 'autor projektu konstrukcji'],
+  [/,?\s*A\. Krzak/g, ''], [/Anna Krzak Studio|Anny Krzak|Anna Krzak|ANNA KRZAK/g, 'projektantka'], [/annakrzakstudio@gmail\.com/g, ''],
+  [/Ewa i Kuba Różyc[cz]y|Różyc[cz]y/g, ''], [/,?\s*ul\. Łokietka( w Krakowie)?/g, ''], [/Łokietka|Łokietki/g, ''], [/w Krakowie|Kraków|Krowodrza/g, ''],
+  [/Budynek B1\/C1,?\s*|budynek B1\/C1/g, ''],
+  [/z projektu EKR|projektu EKR|opisu EKR/g, 'projektu wnętrz'], [/(przekroju|rzucie) EKR/g, '$1 projektantki'], [/Architektka \(EKR\)/g, 'Architektka'],
+  [/„EKR schody przekr[oó]j”/g, '„schody – przekrój”'], [/„EKR schody”/g, '„schody – rzut”'], [/EKR schody przekroj/g, 'Schody – przekrój'], [/EKR schody \(2\)/g, 'Schody – rzut'],
+  [/\bEKR\b ?/g, ''],
+];
+const scrub = html => PRIVATE.reduce((h, [re, to]) => h.replace(re, to), html);
 
 // ── Budowa ───────────────────────────────────────────────────
 await fs.rm(OUT, { recursive: true, force: true });
@@ -175,13 +189,13 @@ for (const p of PAGES) {
     if (!src.includes('</body>')) throw new Error(`${p.src}: brak </body>`);
     html = src.replace('<head>', '<head>\n<meta name="robots" content="noindex, nofollow">').replace('</body>', `${modelNav(p.slug)}</body>`);
   }
-  await fs.writeFile(path.join(OUT, `${p.slug}.html`), html);
+  await fs.writeFile(path.join(OUT, `${p.slug}.html`), scrub(html));
 }
 for (const f of FILES) await fs.copyFile(path.join(ROOT, f.src), path.join(OUT, f.out));
 // apartment tour: aplikacja + dane i media przygotowane lokalnie przez tour/prepare.mjs
 const TOUR = path.join(import.meta.dirname, 'tour');
 for (const f of ['app.js', 'tour.css', 'data.json', 'media', 'files'])
   await fs.cp(path.join(TOUR, f), path.join(OUT, 'tour', f), { recursive: true });
-await fs.writeFile(path.join(OUT, 'index.html'), layout({ slug: 'index', title: 'Mieszkanie EKR', body: indexBody() }));
+await fs.writeFile(path.join(OUT, 'index.html'), scrub(layout({ slug: 'index', title: 'Mieszkanie', body: indexBody() })));
 
 console.log(`Zbudowano ${PAGES.length + 1} stron → ${path.relative(ROOT, OUT)}/`);
