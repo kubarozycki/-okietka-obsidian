@@ -93,7 +93,7 @@ function viewPlan(levelId) {
         <defs><pattern id="hatch" width="16" height="16" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="16" height="16" style="fill:var(--code)"/><line x1="0" y1="0" x2="0" y2="16" style="stroke:var(--line)" stroke-width="6"/></pattern></defs>
         <image href="${L.plan.src}" width="${L.plan.w}" height="${L.plan.h}"/>${oos}${shapes}
       </svg>
-      <p class="plan-hint">Kliknij pomieszczenie na rzucie albo na liście, aby zobaczyć wizualizacje, rysunki, produkty i zadania.</p>
+      <p class="plan-hint">Kliknij pomieszczenie na rzucie albo na liście, aby zobaczyć wizualizacje, rysunki, produkty i zadania. <a href="model-mieszkanie.html">Otwórz model 3D mieszkania →</a></p>
     </div>
     <div class="room-list">${list}</div>
   </div>`;
@@ -174,7 +174,7 @@ function viewRoom(id, anchor) {
   <div class="room-head"><h2>${esc(r.name)}</h2><span class="pill ${st.pct === 100 ? 'ok' : 'wait'}">${st.pct}% decyzji</span>
     <div class="room-nav">${prev ? `<a class="btn" href="#/pokoj/${prev.id}">← ${esc(prev.name)}</a>` : ''}${next ? `<a class="btn" href="#/pokoj/${next.id}">${esc(next.name)} →</a>` : `<a class="btn primary" href="#/podsumowanie">Podsumowanie →</a>`}</div></div>
   ${r.intro ? `<p class="intro">${esc(r.intro)}</p>` : ''}
-  ${r.links.length ? `<div class="actions">${r.links.map(l => `<a class="btn" href="${esc(l.href)}">${esc(l.label)}</a>`).join('')}</div>` : ''}
+  <div class="actions"><a class="btn" href="model-mieszkanie.html#pokoj=${r.id}">Pokaż w 3D</a>${r.links.map(l => `<a class="btn" href="${esc(l.href)}">${esc(l.label)}</a>`).join('')}</div>
   <nav class="chips" aria-label="Sekcje">${sections.map(([sid, l, n]) => `<a href="#/pokoj/${r.id}/${sid}">${l}<span class="n">${n}</span></a>`).join('')}</nav>
   ${wiz}${por}${rys}${prod}${zad}${kom}`;
 

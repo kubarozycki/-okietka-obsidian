@@ -10,7 +10,9 @@ const SCHODY = '02 Konstrukcja/schody';
 const SITE_TITLE = 'Mieszkanie';
 
 const PAGES = [
-  { slug: 'mieszkanie', nav: 'Mieszkanie', kind: 'app', src: 'site/tour/index.html',
+  { slug: 'model-mieszkanie', nav: 'Mieszkanie 3D', kind: 'model', src: '06 Pomieszczenia/mieszkanie-3d.html',
+    desc: 'Interaktywny model 3D całego mieszkania: parter i piętro, warstwy, cięcie poziome, klikalne pomieszczenia i spacer w pierwszej osobie.' },
+  { slug: 'mieszkanie', nav: 'Wizualizacje i wybory', kind: 'app', src: 'site/tour/index.html',
     desc: 'Apartment tour: klikalny rzut, wizualizacje, rysunki, wybór wariantów produktów z budżetem, akceptacje, checklisty i komentarze dla projektantki.' },
   { slug: 'projekt-drewniany', nav: 'Projekt drewniany', kind: 'md', src: `${SCHODY}/Schody drewniane – projekt.md`,
     desc: 'Wybrany wariant: elementy, przekroje, obliczenia wstępne, kolejność robót, koszty, pytania do konstruktora.' },
