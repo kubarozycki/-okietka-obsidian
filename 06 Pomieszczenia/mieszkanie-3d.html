@@ -89,7 +89,7 @@
 <div id="labels"></div>
 <div class="walkhud" id="walkhud">
   <button data-mv="left" aria-label="W lewo">↶</button><button data-mv="fwd" aria-label="Do przodu">↑</button><button data-mv="back" aria-label="Do tyłu">↓</button><button data-mv="right" aria-label="W prawo">↷</button>
-  <span class="t">W, S – ruch · A, D – obrót · przeciągnij – rozglądanie</span><button data-mv="exit" aria-label="Zakończ spacer">✕</button>
+  <span class="t">W, S – ruch · A, D – obrót · przeciągnij – rozglądanie · na piętro po schodach</span><button data-mv="exit" aria-label="Zakończ spacer">✕</button>
 </div>
 
 <script type="module">
@@ -339,15 +339,17 @@ box(G('pietro', 'slabs'), -38, 824, -38, 808, 668, 688, M.slab, false);
   box(f, 101.5, 183.5, 465.7, 629.7, z, z + 42, M.sofa); box(f, 101.5, 121.5, 465.7, 629.7, z, z + 82, M.sofa);
 }
 // ── schody (geometria jak w modelu schodów: stopnie 1–21, przesunięcie y + 350) ──────────
+const STEPS = [];
 {
   const H = 382 / 21, DY = 350, g = G('parter', 'stairs');
-  const steps = [];
+  const steps = STEPS;
   for (let k = 1; k <= 5; k++) { const xa = 210 - 24 * k; steps.push({ n: k, poly: [[xa, 0], [xa + 24, 0], [xa + 24, 90], [xa, 90]] }); }
   steps.push({ n: 6, poly: [[90, 0], [90, 90], [34.5, 0]] }, { n: 7, poly: [[0, 0], [34.5, 0], [90, 90], [0, 40]] }, { n: 8, poly: [[0, 40], [90, 90], [0, 90]] });
   for (let k = 9; k <= 18; k++) { const ya = 90 + 24 * (k - 9); steps.push({ n: k, poly: [[0, ya], [90, ya], [90, ya + 24], [0, ya + 24]] }); }
   steps.push({ n: 19, poly: [[0, 330], [90, 330], [0, 380]] }, { n: 20, poly: [[0, 380], [90, 330], [34.5, 420], [0, 420]] }, { n: 21, poly: [[90, 330], [95, 330], [95, 420], [34.5, 420]] });
   for (const s of steps) {
     const p = s.poly.map(([x, y]) => [x, y + DY]), top = s.n === 21 ? 382 : s.n * H;
+    s.p = p; s.top = top;
     prism(g, p, top - 4, top, M.tread);
     prism(g, p, s.n <= 8 ? 0 : top - 26, top - 4, s.n <= 8 ? M.riser : M.oakFurn);    // dolny blok (kubiki) do podłogi, wyżej konstrukcja pod stopnicą
   }
@@ -448,7 +450,7 @@ const VIEWS = {
   iso: () => animateTo(V(1500, 1500, 1300), V(600, 385, 200)),
   top: () => animateTo(V(600, 386, 2400), V(600, 385, 0), 32),
 };
-const walk = { on: false, yaw: 0, pitch: 0, keys: {}, lvl: 'parter' };
+const walk = { on: false, yaw: 0, pitch: 0, keys: {}, lvl: 'parter', z: 0, zs: 0 };
 document.querySelectorAll('[data-view]').forEach(b => b.addEventListener('click', () => {
   if (b.dataset.view === 'walk') return startWalk(selected || ROOMS[0]);
   stopWalk(); VIEWS[b.dataset.view]();
@@ -460,16 +462,19 @@ function startWalk(r) {
   const dirs = [[Math.max(...xs) - cx, -Math.PI / 2], [cx - Math.min(...xs), Math.PI / 2], [Math.max(...ys) - cy, Math.PI], [cy - Math.min(...ys), 0]];
   walk.yaw = dirs.sort((a, b) => b[0] - a[0])[0][1];
   camera.position.copy(V(cx - Math.sin(walk.yaw + Math.PI) * 0.35 * dirs[0][0], cy - Math.cos(walk.yaw + Math.PI) * 0.35 * dirs[0][0], LV[r.lvl].z + 160));
-  setLevel(r.lvl); cut.value = 300; applyCut();
+  setLevel('all', true); cut.value = 300; applyCut();
+  walk.z = walk.zs = floorAt(camera.position.x, camera.position.z, LV[r.lvl].z);
   layerOn.slabs = false; applyVisibility();
   controls.enabled = false; anim = null;
   camera.fov = 70; camera.updateProjectionMatrix();
+  camera.position.y = walk.zs + 160;
   document.getElementById('walkhud').classList.add('on'); applyVisibility();
 }
 function stopWalk() {
   if (!walk.on) return;
   walk.on = false; controls.enabled = true; camera.fov = 42; camera.updateProjectionMatrix(); applyVisibility();
-  const [cx, cy] = selected ? centroid(selected.poly) : [600, 385]; animateTo(V(cx + 260, cy + 420, LV[walk.lvl].z + 520), V(cx, cy, LV[walk.lvl].z + 60), 40);
+  const [cx, cy] = [camera.position.x, camera.position.z]; setLevel(walk.lvl);
+  animateTo(V(cx + 260, cy + 420, LV[walk.lvl].z + 520), V(cx, cy, LV[walk.lvl].z + 60), 40);
   document.getElementById('walkhud').classList.remove('on');
 }
 let drag = null;
@@ -488,14 +493,27 @@ document.querySelectorAll('[data-mv]').forEach(b => {
   const on = v => () => (hold[b.dataset.mv] = v);
   b.addEventListener('pointerdown', on(true)); b.addEventListener('pointerup', on(false)); b.addEventListener('pointerleave', on(false));
 });
+const inPoly = (x, y, poly) => { let c = false; for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) { const [xi, yi] = poly[i], [xj, yj] = poly[j]; if ((yi > y) !== (yj > y) && x < (xj - xi) * (y - yi) / (yj - yi) + xi) c = !c; } return c; };
+// wysokość podłogi w punkcie (x, y): stopień schodów, piętro (gdy jesteśmy wysoko) albo parter
+function floorAt(x, y, curZ) {
+  const st = STEPS.find(s => inPoly(x, y, s.p));
+  if (st) return st.top;
+  const upper = curZ > 200 && x < 786 && y < 770;
+  return upper ? LV.pietro.z : 0;
+}
 function stepWalk(dt) {
   const k = walk.keys, fwd = (k.w || k.arrowup || hold.fwd ? 1 : 0) - (k.s || k.arrowdown || hold.back ? 1 : 0);
   const turn = (k.a || k.arrowleft || hold.left ? 1 : 0) - (k.d || k.arrowright || hold.right ? 1 : 0);
   walk.yaw += turn * dt * 1.6;
   const dx = -Math.sin(walk.yaw), dz = -Math.cos(walk.yaw), sp = 160 * dt * fwd;
-  const p = camera.position, lim = walk.lvl === 'pietro' ? [5, 781, 5, 765] : [5, 1221, 5, 765];
-  p.x = Math.max(lim[0], Math.min(lim[1], p.x + dx * sp)); p.z = Math.max(lim[2], Math.min(lim[3], p.z + dz * sp));
-  p.y = LV[walk.lvl].z + 160;
+  const p = camera.position, lim = walk.z > 200 ? [5, 781, 5, 765] : [5, 1221, 5, 765];
+  const nx = Math.max(lim[0], Math.min(lim[1], p.x + dx * sp)), nz = Math.max(lim[2], Math.min(lim[3], p.z + dz * sp));
+  const fz = floorAt(nx, nz, walk.z);
+  if (fz - walk.z < 30) { p.x = nx; p.z = nz; walk.z = fz; }          // nie wchodzimy na przeszkody wyższe niż ~1,5 stopnia
+  walk.zs += (walk.z - walk.zs) * Math.min(1, dt * 10);                // płynne wchodzenie po stopniach
+  p.y = walk.zs + 160;
+  const lvlNow = walk.z > 200 ? 'pietro' : 'parter';
+  if (lvlNow !== walk.lvl) { walk.lvl = lvlNow; document.querySelectorAll('[data-level]').forEach(b => b.setAttribute('aria-pressed', b.dataset.level === lvlNow)); }
   camera.lookAt(p.x + Math.sin(walk.yaw + Math.PI) * Math.cos(walk.pitch), p.y + Math.sin(walk.pitch), p.z + Math.cos(walk.yaw + Math.PI) * Math.cos(walk.pitch));
 }
 
@@ -528,6 +546,7 @@ setLevel('all'); applyVisibility(); resize();
 const want = new URLSearchParams(location.hash.slice(1)).get('pokoj');
 const startRoom = ROOMS.find(r => r.id && r.id === want);
 if (startRoom) selectRoom(startRoom, true); else VIEWS.iso();
+window.__model3d = { walk, camera };                 // podgląd stanu (testy)
 requestAnimationFrame(tick);
 </script>
 </body>
