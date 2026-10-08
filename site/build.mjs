@@ -7,9 +7,11 @@ import path from 'node:path';
 const ROOT = path.resolve(import.meta.dirname, '..');
 const OUT = path.join(ROOT, '_site');
 const SCHODY = '02 Konstrukcja/schody';
-const SITE_TITLE = 'Łokietka · schody';
+const SITE_TITLE = 'Łokietka';
 
 const PAGES = [
+  { slug: 'mieszkanie', nav: 'Mieszkanie', kind: 'app', src: 'site/tour/index.html',
+    desc: 'Apartment tour: klikalny rzut, wizualizacje, rysunki, wybór wariantów produktów z budżetem, akceptacje, checklisty i komentarze dla projektantki.' },
   { slug: 'projekt-drewniany', nav: 'Projekt drewniany', kind: 'md', src: `${SCHODY}/Schody drewniane – projekt.md`,
     desc: 'Wybrany wariant: elementy, przekroje, obliczenia wstępne, kolejność robót, koszty, pytania do konstruktora.' },
   { slug: 'plan-budowy', nav: 'Plan budowy', kind: 'md', src: `${SCHODY}/Schody drewniane – plan budowy.md`,
@@ -50,6 +52,7 @@ function layout({ slug, title, body, toc = '' }) {
 <html lang="pl">
 <head>
 <meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${esc(title)} – ${SITE_TITLE}</title>
 <link rel="stylesheet" href="style.css">
@@ -136,15 +139,15 @@ function modelNav(current) {
 function indexBody() {
   const cards = PAGES.map(p => `
     <a class="card" href="${p.slug}.html">
-      <span class="card-kind">${p.kind === 'model' ? 'Model 3D' : 'Opis'}</span>
+      <span class="card-kind">${{ model: 'Model 3D', app: 'Aplikacja', md: 'Opis' }[p.kind]}</span>
       <h2>${p.nav}</h2>
       <p>${p.desc}</p>
     </a>`).join('');
   const files = FILES.map(f => `<li><a href="${f.out}">${f.name}</a></li>`).join('');
   return `
     <header class="hero">
-      <h1>Schody na antresolę</h1>
-      <p class="lead">Mieszkanie EKR, budynek B1/C1, ul. Łokietka w Krakowie. Bieg na wysokość 3,82 m (21 × 18,2 cm), szerokość 90 cm, zabiegowe na dole i na górze, pod biegiem nisza dla psa. Budujemy samodzielnie z drewna. Tu jest projekt konstrukcji, plan budowy, lista zakupów i interaktywny model 3D.</p>
+      <h1>Mieszkanie EKR</h1>
+      <p class="lead">Budynek B1/C1, ul. Łokietka w Krakowie. <b>Mieszkanie</b> to apartment tour po projekcie wnętrz: rzut, wizualizacje, rysunki, wybór produktów z budżetem i decyzje dla projektantki. Pozostałe strony dotyczą <b>schodów na antresolę</b> (3,82 m, 21 × 18,2 cm), które budujemy samodzielnie z drewna: projekt konstrukcji, plan budowy, lista zakupów i model 3D.</p>
     </header>
     <div class="cards">${cards}</div>
     <h2 class="section">Rysunki źródłowe</h2>
@@ -165,13 +168,20 @@ for (const p of PAGES) {
     const body = marked.parse(obsidian(src));
     const title = (src.match(/^# (.+)$/m)?.[1] ?? p.nav).replace(/^\p{Extended_Pictographic}\s*/u, '');
     html = layout({ slug: p.slug, title, body, toc: tocHtml(body) });
+  } else if (p.kind === 'app') {
+    if (!src.includes('<!--NAV-->')) throw new Error(`${p.src}: brak <!--NAV-->`);
+    html = src.replace('<!--NAV-->', navHtml(p.slug));
   } else {
     if (!src.includes('</body>')) throw new Error(`${p.src}: brak </body>`);
-    html = src.replace('</body>', `${modelNav(p.slug)}</body>`);
+    html = src.replace('<head>', '<head>\n<meta name="robots" content="noindex, nofollow">').replace('</body>', `${modelNav(p.slug)}</body>`);
   }
   await fs.writeFile(path.join(OUT, `${p.slug}.html`), html);
 }
 for (const f of FILES) await fs.copyFile(path.join(ROOT, f.src), path.join(OUT, f.out));
-await fs.writeFile(path.join(OUT, 'index.html'), layout({ slug: 'index', title: 'Schody na antresolę', body: indexBody() }));
+// apartment tour: aplikacja + dane i media przygotowane lokalnie przez tour/prepare.mjs
+const TOUR = path.join(import.meta.dirname, 'tour');
+for (const f of ['app.js', 'tour.css', 'data.json', 'media', 'files'])
+  await fs.cp(path.join(TOUR, f), path.join(OUT, 'tour', f), { recursive: true });
+await fs.writeFile(path.join(OUT, 'index.html'), layout({ slug: 'index', title: 'Mieszkanie EKR', body: indexBody() }));
 
 console.log(`Zbudowano ${PAGES.length + 1} stron → ${path.relative(ROOT, OUT)}/`);

@@ -1,0 +1,159 @@
+{
+  "project": {
+    "id": "ekr-lokietka",
+    "name": "Mieszkanie EKR",
+    "subtitle": "ul. Łokietka, Kraków",
+    "designer": "Anna Krzak Studio",
+    "designerEmail": "annakrzakstudio@gmail.com",
+    "client": "Ewa i Kuba Różyccy",
+    "currency": "zł"
+  },
+  "tiers": [
+    { "id": "tani", "label": "Tani" },
+    { "id": "sredni", "label": "Średni" },
+    { "id": "premium", "label": "Premium" }
+  ],
+  "products": {
+    "xlsx": "drive:Zestawienie.xlsx",
+    "fallback": "site/tour/products.sample.json"
+  },
+  "levels": [
+    {
+      "id": "parter",
+      "name": "Parter",
+      "plan": { "pdf": "06 Pomieszczenia/Parter - strefa dzienna/EKR - układ funkcjonalny elektryki.pdf", "dpi": 150, "crop": [160, 190, 1240, 840] },
+      "outOfScope": [
+        { "label": "poza projektem", "poly": [[920, 70], [1150, 70], [1150, 265], [920, 265]] },
+        { "label": "poza projektem", "poly": [[775, 480], [1150, 480], [1150, 760], [775, 760]] }
+      ]
+    },
+    {
+      "id": "pietro",
+      "name": "Piętro",
+      "plan": { "pdf": "06 Pomieszczenia/Piętro/EKR uklad funkcjonalny_sciany pietro.pdf", "dpi": 150, "crop": [320, 240, 1140, 1150] },
+      "outOfScope": []
+    }
+  ],
+  "rooms": [
+    {
+      "id": "salon", "name": "Salon", "level": "parter", "sheet": "Salon",
+      "poly": [[50, 70], [760, 70], [760, 420], [240, 420], [240, 380], [50, 380]],
+      "intro": "Strefa dzienna: sofa, stół jadalniany pod oknem, wejście na schody.",
+      "renders": [
+        { "src": "06 Pomieszczenia/Parter - strefa dzienna/Wizualizacje/1.png", "title": "Strefa dzienna – widok ogólny" },
+        { "src": "06 Pomieszczenia/Parter - strefa dzienna/Wizualizacje/5.png", "title": "Strefa dzienna – widok od wejścia" },
+        { "src": "06 Pomieszczenia/Parter - strefa dzienna/Wizualizacje/4.png", "title": "Salon i jadalnia" },
+        { "src": "06 Pomieszczenia/Parter - strefa dzienna/Wizualizacje/9.png", "title": "Salon z góry" }
+      ],
+      "drawings": [
+        { "src": "06 Pomieszczenia/Parter - strefa dzienna/EKR - układ funkcjonalny elektryki.pdf", "title": "Układ funkcjonalny i elektryka – parter" }
+      ],
+      "tasks": ["Zatwierdzić wizualizacje salonu", "Wybrać warianty mebli i podłogi", "Zatwierdzić układ elektryki"]
+    },
+    {
+      "id": "kuchnia", "name": "Kuchnia", "level": "parter", "sheet": "Kuchnia",
+      "poly": [[240, 420], [760, 420], [760, 760], [240, 760]],
+      "intro": "Zabudowa stolarska wzdłuż ściany, wyspa z siedziskami, blat kawowy.",
+      "renders": [
+        { "src": "06 Pomieszczenia/Parter - strefa dzienna/Wizualizacje/2.png", "title": "Kuchnia – zabudowa i wyspa" },
+        { "src": "06 Pomieszczenia/Parter - strefa dzienna/Wizualizacje/3.png", "title": "Kuchnia od strony łazienki" }
+      ],
+      "drawings": [],
+      "tasks": ["Zatwierdzić wizualizacje kuchni", "Rozstrzygnąć uchwyty: własne czy od stolarza", "Zatwierdzić blat kuchenny i kawowy"]
+    },
+    {
+      "id": "schody", "name": "Schody", "level": "parter", "sheet": null,
+      "poly": [[50, 380], [240, 380], [240, 760], [50, 760]],
+      "intro": "Schody drewniane na antresolę, budowane samodzielnie. Pełny projekt konstrukcji, plan budowy i model 3D są w osobnej części strony.",
+      "links": [
+        { "href": "projekt-drewniany.html", "label": "Projekt konstrukcji" },
+        { "href": "plan-budowy.html", "label": "Plan budowy" },
+        { "href": "lista-zakupow.html", "label": "Lista zakupów" },
+        { "href": "model-drewno.html", "label": "Model 3D" }
+      ],
+      "renders": [],
+      "drawings": [
+        { "src": "02 Konstrukcja/schody/EKR schody (2).pdf", "title": "Schody – rzut" },
+        { "src": "02 Konstrukcja/schody/EKR schody przekroj.pdf", "title": "Schody – przekrój" }
+      ],
+      "tasks": ["Zatwierdzenie konstruktora", "Uzgodnienie konstrukcji drewnianej z projektantką", "Zamówienie drewna"]
+    },
+    {
+      "id": "przedpokoj", "name": "Przedpokój", "level": "parter", "sheet": "Przedpokój",
+      "poly": [[775, 70], [920, 70], [920, 480], [775, 480]],
+      "intro": "Wejście do mieszkania, zabudowa wnękowa na wymiar, lustro.",
+      "renders": [
+        { "src": "06 Pomieszczenia/Parter - strefa dzienna/Wizualizacje/6.png", "title": "Zabudowa przy wejściu" },
+        { "src": "06 Pomieszczenia/Parter - strefa dzienna/Wizualizacje/7.png", "title": "Zabudowa i przeszklenie" }
+      ],
+      "drawings": [],
+      "tasks": ["Zatwierdzić zabudowę wnękową", "Wybrać lampy sufitowe"]
+    },
+    {
+      "id": "lazienka-dol", "name": "Łazienka dół", "level": "parter", "sheet": "Łazienka dół",
+      "poly": [[920, 270], [1150, 270], [1150, 475], [920, 475]],
+      "intro": "Łazienka z wanną, szachownica na podłodze. Do wyboru wariant zlewu i kolorystyki.",
+      "renders": [
+        { "src": "06 Pomieszczenia/Łazienka - parter/Wizualizacje/parter_1.png", "title": "Wariant podstawowy" },
+        { "src": "06 Pomieszczenia/Łazienka - parter/Wizualizacje/parter_2.png", "title": "Widok od wanny" },
+        { "src": "06 Pomieszczenia/Łazienka - parter/Wizualizacje/parter_niebieska_1.png", "title": "Wariant niebieski" }
+      ],
+      "compare": [
+        { "a": "06 Pomieszczenia/Łazienka - parter/Wizualizacje/parter_1.png", "aLabel": "Umywalka z projektu",
+          "b": "06 Pomieszczenia/Łazienka - parter/Wizualizacje/parter_1(inny zlew).png", "bLabel": "Inny zlew", "title": "Wariant umywalki" }
+      ],
+      "drawings": [],
+      "tasks": ["Wybrać wariant umywalki", "Wybrać kolorystykę (podstawowa / niebieska)", "Zatwierdzić płytki"]
+    },
+    {
+      "id": "lazienka-gora", "name": "Łazienka góra", "level": "pietro", "sheet": "Łazienka góra",
+      "poly": [[75, 80], [355, 80], [355, 460], [75, 460]],
+      "intro": "Łazienka z prysznicem, ciemne ściany, marmurowy blat.",
+      "renders": [
+        { "src": "06 Pomieszczenia/Łazienka - piętro/Wizualizacje/piętro 1.png", "title": "Umywalka i prysznic" },
+        { "src": "06 Pomieszczenia/Łazienka - piętro/Wizualizacje/piętro 2.png", "title": "Strefa umywalki" },
+        { "src": "06 Pomieszczenia/Łazienka - piętro/Wizualizacje/piętro 3.png", "title": "Prysznic i WC" }
+      ],
+      "drawings": [
+        { "src": "06 Pomieszczenia/Łazienka - piętro/Wizualizacje/EKR lazienka gorna.pdf", "title": "Łazienka górna – rzut" },
+        { "src": "06 Pomieszczenia/Łazienka - piętro/Wizualizacje/EKR lazienka gorna widok AB.pdf", "title": "Widoki A i B" },
+        { "src": "06 Pomieszczenia/Łazienka - piętro/Wizualizacje/EKR lazienka gorna widok CD.pdf", "title": "Widoki C i D" }
+      ],
+      "tasks": ["Zatwierdzić wizualizacje", "Zatwierdzić widoki ścian", "Wybrać armaturę i ceramikę"]
+    },
+    {
+      "id": "garderoba", "name": "Garderoba", "level": "pietro", "sheet": null,
+      "poly": [[355, 80], [580, 80], [580, 460], [355, 460]],
+      "intro": "Garderoba między łazienką a sypialnią.",
+      "renders": [],
+      "drawings": [],
+      "tasks": ["Zatwierdzić układ półek i drążków"]
+    },
+    {
+      "id": "sypialnia", "name": "Sypialnia", "level": "pietro", "sheet": "Sypialnia",
+      "poly": [[580, 80], [1050, 80], [1050, 597], [540, 597], [540, 470], [580, 470]],
+      "intro": "Sypialnia z łóżkiem 160×200, szafa przesuwna, fotel.",
+      "renders": [],
+      "drawings": [
+        { "src": "06 Pomieszczenia/Piętro/EKR uklad funkcjonalny_sciany pietro.pdf", "title": "Układ funkcjonalny – piętro" }
+      ],
+      "tasks": ["Wybrać łóżko i szafki nocne", "Zdecydować o szafie przesuwnej"]
+    },
+    {
+      "id": "chill", "name": "Chill zone", "level": "pietro", "sheet": "Chill zone",
+      "poly": [[75, 470], [505, 470], [505, 1035], [75, 1035]],
+      "intro": "Strefa wypoczynku: fotele, komoda od stolarza, oświetlenie.",
+      "renders": [],
+      "drawings": [],
+      "tasks": ["Wybrać fotele", "Wycenić komodę u stolarza"]
+    },
+    {
+      "id": "tadzio", "name": "Pokój Tadzia", "level": "pietro", "sheet": "Pokój Tadzio",
+      "poly": [[540, 600], [1050, 600], [1050, 1035], [540, 1035]],
+      "intro": "Pokój dziecięcy: łóżko 90×200, biurko, krzesło.",
+      "renders": [],
+      "drawings": [],
+      "tasks": ["Wybrać łóżko i materac", "Wybrać biurko i krzesło"]
+    }
+  ]
+}

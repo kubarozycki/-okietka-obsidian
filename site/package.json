@@ -5,9 +5,13 @@
   "description": "Strona GitHub Pages ze schodami EKR budowana z plików vaulta",
   "scripts": {
     "build": "node build.mjs",
+    "tour": "node tour/prepare.mjs",
     "preview": "node build.mjs && npx --yes serve ../_site"
   },
   "dependencies": {
     "marked": "^18.0.0"
+  },
+  "devDependencies": {
+    "xlsx": "^0.18.5"
   }
 }

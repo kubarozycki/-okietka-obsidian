@@ -1,0 +1,85 @@
+{
+  "_info": "Próbka: pierwsze wiersze arkusza „Zestawienie” (Dysk Google). Pełne dane generuje prepare.mjs z pliku Zestawienie.xlsx.",
+  "Kuchnia": [
+    { "name": "Meble od stolarza", "qty": 1, "rec": "tani", "decision": "tani", "options": { "tani": { "price": 35000 } } },
+    { "name": "Blat kuchenny + kawowy", "qty": 1, "rec": "sredni", "decision": "tani", "options": { "tani": { "price": 20000 } } },
+    { "name": "Uchwyty (wy czy stolarz?)", "qty": 1, "rec": null, "decision": "tani", "options": { "tani": { "price": 0, "link": "https://peka.pl/kategoria/listwy-korytkowe" } } }
+  ],
+  "Łazienka dół": [
+    { "name": "Umywalka (wg projektu)", "qty": 1, "rec": "tani", "decision": "tani", "options": { "tani": { "price": 1133, "link": "https://multigastro.pl/pl/p/Stol-ze-zlewem-lewym-Budget-Line-z-polka-skrecany-1000x600x850-mm/43159" } } }
+  ],
+  "Łazienka góra": [],
+  "Salon": [
+    { "name": "Sofa 3-osobowa", "qty": 1, "rec": "sredni", "decision": "sredni", "options": {
+      "tani": { "price": 1499, "link": "https://www.google.com/search?tbm=shop&q=sofa+3+osobowa+tania" },
+      "sredni": { "price": 3990, "link": "https://www.google.com/search?tbm=shop&q=sofa+3+osobowa+rozk%C5%82adana" },
+      "premium": { "price": 11500, "link": "https://www.google.com/search?tbm=shop&q=sofa+3+osobowa+premium" } } },
+    { "name": "Ławka", "qty": 1, "rec": null, "decision": null, "options": {
+      "premium": { "price": 2700, "link": "https://hoom.co/lawki/lawka-rollo" } } },
+    { "name": "Panele podłogowe (m²)", "qty": 28, "rec": "sredni", "decision": "sredni", "options": {
+      "tani": { "price": 49, "link": "https://www.google.com/search?tbm=shop&q=panele+pod%C5%82ogowe+tanie" },
+      "sredni": { "price": 119, "link": "https://www.google.com/search?tbm=shop&q=panele+pod%C5%82ogowe+AC5" },
+      "premium": { "price": 320, "link": "https://www.google.com/search?tbm=shop&q=deska+warstwowa+d%C4%99bowa" } } },
+    { "name": "Stolik kawowy", "qty": 1, "rec": "sredni", "decision": null, "options": {
+      "tani": { "price": 1203, "link": "https://zona-design.pl/stolik-kawowy-rici-60-cm-gradient-czerwony-129116-s.html" },
+      "sredni": { "price": 1350, "link": "https://eyeondesign.pl/products/stolik-kawowy-balloon-burgundowy" } } }
+  ],
+  "Sypialnia": [
+    { "name": "Łóżko 160×200 ze stelażem", "qty": 1, "rec": "sredni", "decision": "sredni", "options": {
+      "tani": { "price": 899, "link": "https://www.google.com/search?tbm=shop&q=%C5%82%C3%B3%C5%BCko+160x200+tanie" },
+      "sredni": { "price": 3600, "link": "https://www.beliani.pl/lozko-ekoskora-160-x-200-cm-jasne-drewno-zen.html" },
+      "premium": { "price": 7900, "link": "https://www.google.com/search?tbm=shop&q=%C5%82%C3%B3%C5%BCko+160x200+premium" } } },
+    { "name": "Szafa przesuwna", "qty": 1, "rec": "premium", "decision": "tani", "options": {
+      "tani": { "price": 1290, "link": "https://www.google.com/search?tbm=shop&q=szafa+przesuwna+tania" },
+      "sredni": { "price": 2495, "link": "https://www.ikea.com/pl/pl/p/pax-kombinacja-szafy-bialy-s29478181/" },
+      "premium": { "price": 8500, "link": "https://www.google.com/search?tbm=shop&q=szafa+przesuwna+na+wymiar" } } },
+    { "name": "Szafki nocne", "qty": 2, "rec": "sredni", "decision": null, "options": {
+      "sredni": { "price": 0, "note": "w zestawie z łóżkiem" } } },
+    { "name": "Fotel", "qty": 1, "rec": "tani", "decision": null, "options": {
+      "tani": { "price": 425, "link": "https://jysk.pl/salon/fotele/fotel-klubowy-guldbjerg-tkanina-piaskowy" },
+      "sredni": { "price": 799, "link": "https://www.ikea.com/pl/pl/p/dyvlinge-fotel-obrotowy-kelinge-bezowy-00623862/" } } }
+  ],
+  "Pokój Tadzio": [
+    { "name": "Łóżko 90×200 z materacem", "qty": 1, "rec": "sredni", "decision": "tani", "options": {
+      "tani": { "price": 399, "link": "https://www.meblegromadka.pl/pl/p/Lozko-podlogowe-niskie-Lulu-naturalne-drewno-Montessori/117" },
+      "sredni": { "price": 750, "link": "https://lanomeble.pl/" },
+      "premium": { "price": 1400, "link": "https://ola4kids.pl/pl/p/Tapicerowane-lozko-dzieciece-ARIEL-wariantyrozmiarykolory/30538" } } },
+    { "name": "Biurko", "qty": 1, "rec": "tani", "decision": "sredni", "options": {
+      "tani": { "price": 493, "link": "https://www.ikea.com/pl/pl/cat/biurka-dzieciece-24714/" },
+      "sredni": { "price": 899, "link": "https://www.google.com/search?tbm=shop&q=biurko+regulowane+dzieci%C4%99ce" },
+      "premium": { "price": 2490, "link": "https://www.google.com/search?tbm=shop&q=biurko+rosn%C4%85ce+premium" } } },
+    { "name": "Krzesło", "qty": 1, "rec": null, "decision": null, "options": {} },
+    { "name": "Materac", "qty": 1, "rec": null, "decision": null, "options": {} }
+  ],
+  "Przedpokój": [
+    { "name": "Szafa wnękowa na wymiar", "qty": 1, "rec": "sredni", "decision": "sredni", "options": {
+      "tani": { "price": 1690, "link": "https://www.google.com/search?tbm=shop&q=szafa+wn%C4%99kowa+tania" },
+      "sredni": { "price": 3890, "link": "https://www.google.com/search?tbm=shop&q=szafa+wn%C4%99kowa+na+wymiar" },
+      "premium": { "price": 9800, "link": "https://www.google.com/search?tbm=shop&q=szafa+wn%C4%99kowa+premium" } } },
+    { "name": "Lustro dekoracyjne", "qty": 1, "rec": "tani", "decision": "tani", "options": {
+      "tani": { "price": 129, "link": "https://www.google.com/search?tbm=shop&q=lustro+%C5%9Bcienne+tanie" },
+      "sredni": { "price": 449, "link": "https://www.google.com/search?tbm=shop&q=lustro+dekoracyjne" },
+      "premium": { "price": 1490, "link": "https://www.google.com/search?tbm=shop&q=lustro+premium+w+ramie" } } },
+    { "name": "Dywan", "qty": 1, "rec": null, "decision": null, "options": {} },
+    { "name": "Lampa sufitowa", "qty": 2, "rec": null, "decision": null, "options": {
+      "tani": { "price": 119, "link": "https://www.imperiumlamp.pl/29739,eye-tone-white-8925-nowodvorski" },
+      "sredni": { "price": 254, "link": "https://www.lampy.pl/p/artemide-teti-designerska-lampa-sufitowa-biala-1060019.html" },
+      "premium": { "price": 302, "link": "https://www.imperiumlamp.pl/32456,planet-led-white-c009cw-l12w-maytoni" } } }
+  ],
+  "Chill zone": [
+    { "name": "Fotel wypoczynkowy", "qty": 2, "rec": "sredni", "decision": "sredni", "options": {
+      "tani": { "price": 449, "link": "https://www.google.com/search?tbm=shop&q=fotel+wypoczynkowy+tani" },
+      "sredni": { "price": 1290, "link": "https://www.google.com/search?tbm=shop&q=fotel+wypoczynkowy+uszak" },
+      "premium": { "price": 4200, "link": "https://www.google.com/search?tbm=shop&q=fotel+wypoczynkowy+premium" } } },
+    { "name": "Oświetlenie LED / lampa", "qty": 1, "rec": "sredni", "decision": "sredni", "options": {
+      "tani": { "price": 159, "link": "https://www.google.com/search?tbm=shop&q=lampa+pod%C5%82ogowa+tania" },
+      "sredni": { "price": 499, "link": "https://www.google.com/search?tbm=shop&q=lampa+pod%C5%82ogowa+LED" },
+      "premium": { "price": 1890, "link": "https://www.google.com/search?tbm=shop&q=lampa+designerska+premium" } } },
+    { "name": "Komoda", "qty": 1, "rec": "sredni", "decision": null, "options": {
+      "sredni": { "price": null, "note": "stolarz – wg indywidualnej wyceny" } } },
+    { "name": "Lampa sufitowa", "qty": 1, "rec": null, "decision": null, "options": {
+      "tani": { "price": 80, "link": "https://leddo.pl/" },
+      "sredni": { "price": 250, "link": "https://www.imperiumlamp.pl/361243,amis-white-iv-10797-tk-lighting" },
+      "premium": { "price": 350, "link": "https://ryssa.pl/produkt/lampa-sufitowa-listwa-w-niebieskim-kolorze-arte-4/" } } }
+  ]
+}
