@@ -29,6 +29,9 @@ Składnia pojedynczego zadania:
 ## 🎨 Wykończenie – [[06 Pomieszczenia]]
 - [ ] Parter – strefa dzienna #wykończenie
 - [ ] Łazienka – parter #wykończenie
+    - [ ] Umywalka inox: zmierzyć wysokość i zasięg wylewki baterii + odpływ w ścianie ⏫ #wykończenie → [[Umywalka stalowa wolnostojąca – projekt]]
+    - [ ] Umywalka inox: znaleźć rurę Ø 406,4×2 i dennicę Ø 400×2 #wykończenie
+    - [ ] Umywalka inox: sprawdzić Lift TIG w spawarce / próby spawania #wykończenie
 - [ ] Łazienka – piętro #wykończenie
 - [ ] Piętro #wykończenie
 

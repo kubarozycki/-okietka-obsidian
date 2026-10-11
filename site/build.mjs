@@ -7,6 +7,7 @@ import path from 'node:path';
 const ROOT = path.resolve(import.meta.dirname, '..');
 const OUT = path.join(ROOT, '_site');
 const SCHODY = '02 Konstrukcja/schody';
+const LAZ_DOL = '06 Pomieszczenia/Łazienka - parter';
 const SITE_TITLE = 'Mieszkanie';
 
 const PAGES = [
@@ -24,6 +25,10 @@ const PAGES = [
     desc: 'Interaktywny model szkieletu drewnianego z listą cięć, stopnicami i zestawieniem materiałów do druku.' },
   { slug: 'decyzja', nav: 'Decyzja', kind: 'md', src: `${SCHODY}/Warianty schodów – porównanie.md`,
     desc: 'Dlaczego drewno: porównanie z biegiem żelbetowym i murowanym pod kątem ciężaru i stropu nad sąsiadem.' },
+  { slug: 'umywalka', nav: 'Umywalka inox', kind: 'md', src: `${LAZ_DOL}/Umywalka stalowa wolnostojąca – projekt.md`,
+    desc: 'Umywalka wolnostojąca w stylu Steinberg 442 z rury nierdzewnej i dennicy tłoczonej: materiały, spawanie, wykończenie, odpływ i mocowanie.' },
+  { slug: 'model-umywalka', nav: 'Umywalka 3D', kind: 'model', src: `${LAZ_DOL}/umywalka-inox.html`,
+    desc: 'Model 3D umywalki liczony od wysokości baterii, z kartą wykonawczą do druku: zamówienie, trasowanie walca, profil dennicy, kolejność spawania, odpływ.' },
 ];
 const FILES = [
   // rysunki publikowane jako obrazy z zamaskowaną tabelką (przygotowuje tour/prepare.mjs); klucz = nazwa oryginału w vaulcie
@@ -91,6 +96,7 @@ marked.use({
 
 function obsidian(md) {
   md = md.replace(/^---\n[\s\S]*?\n---\n/, '');                                  // frontmatter
+  md = md.replace(/\[\[#([^\]|]+)(?:\|([^\]]+))?\]\]/g, (_, h, alias) => `[${alias || h}](#${slugify(h)})`);  // [[#nagłówek]]
   md = md.replace(/\[\[([^\]|#]+)(?:#[^\]|]*)?(?:\|([^\]]+))?\]\]/g, (_, target, alias) => {
     const href = LINKS.get(target.trim()), label = alias || target.replace(/\.(md|pdf)$/, '');
     return href ? `[${label}](${encodeURI(href)})` : label;
@@ -150,7 +156,7 @@ function indexBody() {
   return `
     <header class="hero">
       <h1>Mieszkanie</h1>
-      <p class="lead"><b>Mieszkanie</b> to apartment tour po projekcie wnętrz: rzut, wizualizacje, rysunki, wybór produktów z budżetem i decyzje dla projektantki. Pozostałe strony dotyczą <b>schodów na antresolę</b> (3,82 m, 21 × 18,2 cm), które budujemy samodzielnie z drewna: projekt konstrukcji, plan budowy, lista zakupów i model 3D.</p>
+      <p class="lead"><b>Mieszkanie</b> to apartment tour po projekcie wnętrz: rzut, wizualizacje, rysunki, wybór produktów z budżetem i decyzje dla projektantki. Pozostałe strony dotyczą <b>schodów na antresolę</b> (3,82 m, 21 × 18,2 cm), które budujemy samodzielnie z drewna: projekt konstrukcji, plan budowy, lista zakupów i model 3D. <b>Umywalka inox</b> to wolnostojąca umywalka do łazienki na parterze, robiona samodzielnie z rury nierdzewnej i dennicy tłoczonej, z modelem 3D i kartą wykonawczą.</p>
     </header>
     <div class="cards">${cards}</div>
     <h2 class="section">Rysunki źródłowe</h2>

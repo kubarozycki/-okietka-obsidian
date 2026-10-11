@@ -81,7 +81,7 @@ Dodatkowo (dotyczy budynków B, w tym B1/C1):
 ### [[06 Pomieszczenia]] — decyzje wykończeniowe pokój po pokoju
 Twoje własne materiały robocze (wizualizacje, układy funkcjonalne), przeniesione z folderu `pomieszczenia/` i dopasowane do reszty repo:
 - **Parter - strefa dzienna** — [[EKR - układ funkcjonalny elektryki.pdf|układ funkcjonalny elektryki]] + Wizualizacje (8 grafik)
-- **Łazienka - parter** — Wizualizacje (4 grafiki, w tym wariant z innym zlewem)
+- **Łazienka - parter** — Wizualizacje (4 grafiki, w tym wariant z innym zlewem) + [[Umywalka stalowa wolnostojąca – projekt]] (DIY, walec inox w stylu Steinberg 442)
 - **Łazienka - piętro** — Wizualizacje (3 grafiki)
 - **Piętro** — pusty folder, gotowy na materiały dot. góry domu
 

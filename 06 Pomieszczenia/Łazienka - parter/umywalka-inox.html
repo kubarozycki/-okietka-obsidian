@@ -1,0 +1,752 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Umywalka inox – model</title>
+<style>
+  :root {
+    --bg: #eef0f2; --panel: #ffffff; --ink: #1d2126; --muted: #69707a; --line: #dde1e6;
+    --accent: #d9480f;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; font: 13px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color: var(--ink); background: var(--bg); }
+  #app { position: fixed; inset: 0 0 0 340px; }
+  #labels { position: fixed; inset: 0 0 0 340px; pointer-events: none; }
+  aside { position: fixed; top: 0; left: 0; bottom: 0; width: 340px; overflow-y: auto; background: var(--panel); border-right: 1px solid var(--line); padding: 16px 18px 40px; }
+  h1 { font-size: 16px; margin: 0 0 4px; }
+  h2 { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 18px 0 8px; font-weight: 600; }
+  .sub { color: var(--muted); margin: 0 0 6px; }
+  .views { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+  button { font: inherit; padding: 6px 4px; border: 1px solid var(--line); background: #f7f8f9; border-radius: 6px; cursor: pointer; color: var(--ink); }
+  button:hover { background: #eceff2; }
+  label.chk { display: flex; align-items: center; gap: 8px; padding: 2px 0; cursor: pointer; }
+  .sw { width: 12px; height: 12px; border-radius: 3px; border: 1px solid rgba(0,0,0,.2); flex: none; }
+  .row { display: grid; grid-template-columns: 1fr 70px; align-items: center; gap: 8px; margin: 4px 0; }
+  .row input[type=range] { width: 100%; }
+  .row output { text-align: right; font-variant-numeric: tabular-nums; }
+  .row select { width: 100%; font: inherit; padding: 3px; margin-top: 2px; }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  td { padding: 3px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+  td:last-child { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; padding-left: 8px; }
+  ul { padding-left: 16px; margin: 4px 0; }
+  li { margin: 3px 0; }
+  .warn { color: #b3261e; }
+  .ok { color: #2b8a3e; }
+  .hint { color: var(--muted); font-size: 12px; }
+  .dim { font: 600 11px/1 -apple-system, sans-serif; color: #d9480f; background: rgba(255,255,255,.85); padding: 1px 3px; border-radius: 3px; white-space: nowrap; }
+  .part { font: 500 11px/1.2 -apple-system, sans-serif; color: #fff; background: rgba(29,33,38,.82); padding: 2px 5px; border-radius: 3px; white-space: nowrap; }
+  .tack { font: 700 10px/1 -apple-system, sans-serif; color: #fff; background: #d9480f; padding: 2px 4px; border-radius: 8px; }
+  .primary { width: 100%; padding: 9px 8px; background: #1d2126; color: #fff; border-color: #1d2126; font-weight: 600; }
+  .primary:hover { background: #343a42; }
+  #sheet { position: fixed; inset: 0; z-index: 20; overflow-y: auto; background: #fff; padding: 24px clamp(16px, 4vw, 48px) 60px; }
+  #sheet .bar { display: flex; gap: 8px; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; margin-bottom: 8px; }
+  #sheet .actions { display: flex; gap: 8px; }
+  #sheet h1 { font-size: 20px; }
+  #sheet h2 { font-size: 12px; margin-top: 26px; }
+  #sheet .meta { color: var(--muted); max-width: 900px; }
+  #sheet svg { display: block; width: 100%; height: auto; max-width: 900px; }
+  #sheet svg text { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+  #sheet svg text:not([fill]) { fill: #1d2126; }
+  .figs { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 18px; max-width: 900px; }
+  .tbl-wrap { overflow-x: auto; }
+  #sheet table { max-width: 900px; font-size: 13px; }
+  #sheet th { text-align: left; font-weight: 600; padding: 4px 8px 4px 0; border-bottom: 2px solid var(--ink); white-space: nowrap; }
+  #sheet td { padding: 4px 8px 4px 0; }
+  #sheet td:last-child { text-align: left; }
+  #sheet td.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  #sheet ol.check { max-width: 900px; padding-left: 0; list-style: none; counter-reset: s; }
+  #sheet ol.check li { counter-increment: s; margin: 6px 0; padding-left: 42px; position: relative; }
+  #sheet ol.check li::before { content: "☐ " counter(s) "."; position: absolute; left: 0; font-weight: 600; }
+  #sheet .warnbox { border-left: 3px solid #b3261e; background: #fdf1f0; padding: 6px 10px; max-width: 900px; }
+  @media print {
+    body > *:not(#sheet) { display: none !important; }
+    #sheet { position: static; overflow: visible; padding: 0; }
+    #sheet .actions { display: none; }
+    #sheet h2 { break-after: avoid; }
+    #sheet svg, .figs > div { break-inside: avoid; }
+  }
+  @media (max-width: 760px) {
+    #app, #labels { position: fixed; inset: 0 0 auto 0; height: 55vh; height: 55svh; }
+    #app { border-bottom: 1px solid var(--line); }
+    #labels { overflow: hidden; }
+    html, body { height: auto; }
+    aside { position: static; width: auto; height: auto; border-right: 0; margin-top: 55vh; margin-top: 55svh; padding-bottom: 120px; }
+    body { overflow: auto; }
+  }
+</style>
+<script type="importmap">
+{ "imports": {
+  "three": "https://unpkg.com/three@0.164.1/build/three.module.js",
+  "three/addons/": "https://unpkg.com/three@0.164.1/examples/jsm/"
+} }
+</script>
+</head>
+<body>
+<aside>
+  <h1>Umywalka wolnostojąca – stal nierdzewna</h1>
+  <p class="sub">Walec z rury nierdzewnej z wpawaną dennicą tłoczoną jako misą, w stylu Steinberg 442. Bateria ścienna ma stałą wysokość, więc z niej wynika długość rury. Jednostki: mm.</p>
+  <p class="hint">LPM – obrót · PPM – przesuw · kółko – zoom</p>
+
+  <h2>Widok</h2>
+  <div class="views">
+    <button data-view="iso">3D</button>
+    <button data-view="front">Przód</button>
+    <button data-view="section">Przekrój</button>
+    <button data-view="top">Góra</button>
+    <button data-view="bowl">Misa</button>
+  </div>
+
+  <h2>Warstwy</h2>
+  <div id="layers"></div>
+
+  <h2>Cięcie modelu (płaszczyzna X)</h2>
+  <div class="row"><input type="range" id="cut" min="-260" max="300" step="5" value="300"><output id="cutOut">wył.</output></div>
+  <p class="hint">X = 0 to oś umywalki i wylewki. Przy X = 0 widać przekrój przez misę, syfon i odpływ (przycisk „Przekrój”).</p>
+
+  <h2>Bateria i ściana (zmierz na miejscu)</h2>
+  <div id="paramsTap"></div>
+  <h2>Walec i misa</h2>
+  <div id="paramsBody"></div>
+  <h2>Odpływ</h2>
+  <div id="paramsDrain"></div>
+
+  <h2>Wynik</h2>
+  <div id="stats"></div>
+  <ul id="checks"></ul>
+  <p style="margin-top:10px"><button class="primary" id="openSheet">Karta wykonawcza – zamówienie, trasowanie, spawanie</button></p>
+</aside>
+<div id="app"></div>
+<div id="labels"></div>
+<section id="sheet" hidden>
+  <div class="bar">
+    <div>
+      <h1>Umywalka inox – karta wykonawcza</h1>
+      <p class="meta" id="sheetMeta"></p>
+    </div>
+    <div class="actions"><button id="printSheet">Drukuj / PDF</button><button id="closeSheet">Zamknij ✕</button></div>
+  </div>
+  <div id="sheetBody"></div>
+</section>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+
+// ─────────────────────────────────────────────────────────────
+// Parametry (mm). Układ: x wzdłuż ściany (w prawo patrząc na ścianę), y od lica płytek w głąb łazienki, z w górę od posadzki.
+// Kąty na obwodzie walca: 0° = przód (do łazienki), 90° = prawo, 180° = tył (ściana), 270° = lewo – zgodnie z ruchem wskazówek zegara z góry.
+// ─────────────────────────────────────────────────────────────
+const P = {
+  Hw: 1000, clr: 150, reach: 180, gap: 20,
+  OD: 406.4, t: 2, type: '28011', play: 1.2, d: 50, h1: 25,
+  hd: 500, dn: 50, hole: 45,
+};
+const SEAM = 155;                // szew rury – z tyłu, obok otworu odpływu
+const STOPA = 18;                // grubość stopy centrującej (sklejka wodoodporna)
+const SCREWS = [90, 180, 270];   // wkręty przez ściankę walca w krawędź stopy
+const RHO = 7.9e-6;              // kg/mm³
+
+const PARAMS = {
+  paramsTap: [
+    ['Hw', 'wysokość wylotu wylewki nad posadzką', 850, 1200, 5],
+    ['clr', 'odstęp wylot wylewki → rant', 100, 220, 5],
+    ['reach', 'zasięg wylewki od lica płytek', 120, 280, 5],
+    ['gap', 'szczelina walec ↔ płytki', 5, 60, 1],
+  ],
+  paramsBody: [
+    ['OD', 'rura – średnica zewn.', [[323.9, 'Ø 323,9 (DN 300)'], [355.6, 'Ø 355,6 (DN 350)'], [406.4, 'Ø 406,4 (DN 400)']]],
+    ['t', 'grubość ścianki rury i dennicy', [[1.5, '1,5 mm'], [2, '2,0 mm'], [3, '3,0 mm']]],
+    ['type', 'dennica', [['28011', 'DIN 28011 (koszowa, płytsza)'], ['28013', 'DIN 28013 (elipsoidalna, głębsza)']]],
+    ['play', 'luz dennicy w rurze (na stronę)', 0.3, 2.5, 0.1],
+    ['d', 'krawędź dennicy poniżej rantu', 10, 120, 5],
+    ['h1', 'kołnierz (część walcowa) dennicy', 10, 50, 5],
+  ],
+  paramsDrain: [
+    ['hd', 'oś odpływu w ścianie nad posadzką', 300, 700, 5],
+    ['dn', 'rura odpływowa w ścianie', [[40, 'Ø 40'], [50, 'Ø 50']]],
+    ['hole', 'otwór pod korek w dennicy', 35, 70, 1],
+  ],
+};
+
+const fmt = (v, dec = 0) => (Math.round(v * 10 ** dec) / 10 ** dec).toFixed(dec).replace('.', ',');
+const V = (x, y, z) => new THREE.Vector3(x, z, y);   // (x, y, z) → three (x, z, y)
+const rad = d => d * Math.PI / 180;
+
+// ─────────────────────────────────────────────────────────────
+// Geometria wyliczana
+// ─────────────────────────────────────────────────────────────
+function geom() {
+  const OD = P.OD, t = P.t, ID = OD - 2 * t, R0 = OD / 2;
+  const L = P.Hw - P.clr;                    // długość rury = wysokość rantu
+  const Da = Math.round((ID - 2 * P.play) * 10) / 10, s = t, a = Da / 2;
+  const [Rk, rk] = P.type === '28011' ? [Da, 0.1 * Da] : [0.8 * Da, 0.154 * Da];
+  const z0 = Math.sqrt((Rk - rk) ** 2 - (a - rk) ** 2);
+  const beta = Math.atan2(z0, a - rk);
+  const h1 = P.h1, h2 = Rk - z0;             // wysokość części wypukłej (zewn.)
+  const rh = P.hole / 2;
+  // profile: [ρ, głębokość poniżej krawędzi dennicy]
+  const curve = (R, r, rr0, n = 24) => {
+    const pts = [[rr0, 0], [rr0, h1]];
+    for (let i = 1; i <= n; i++) { const al = beta * i / n; pts.push([a - rk + r * Math.cos(al), h1 + r * Math.sin(al)]); }
+    const psiMin = Math.asin(Math.min(1, rh / R));
+    for (let i = 1; i <= n; i++) { const ps = (Math.PI / 2 - beta) + (psiMin - (Math.PI / 2 - beta)) * i / n; pts.push([R * Math.sin(ps), h1 - z0 + R * Math.cos(ps)]); }
+    return pts;
+  };
+  const outer = curve(Rk, rk, a), inner = curve(Rk - s, rk - s, a - s);
+  const innerBottom = h1 - z0 + (Rk - s);    // głębokość dna misy (wewn.) pod krawędzią dennicy
+  const depth = P.d + innerBottom;           // od rantu do dna w osi
+  const yc = P.gap + R0;                     // oś walca od lica płytek
+  const zEdge = L - P.d;                     // krawędź dennicy (z)
+  const bowlZ = rho => {                     // z wewn. powierzchni misy w odległości rho od osi
+    if (rho >= a - s) return zEdge;
+    for (let i = 2; i < inner.length - 1; i++) {
+      const [r1, d1] = inner[i], [r2, d2] = inner[i + 1];
+      if (rho <= r1 && rho >= r2) return zEdge - (d1 + (d2 - d1) * (r1 - rho) / (r1 - r2 || 1));
+    }
+    return zEdge - innerBottom;
+  };
+  let dishArea = 0;
+  for (let i = 0; i < outer.length - 1; i++) {
+    const [r1, d1] = outer[i], [r2, d2] = outer[i + 1];
+    dishArea += Math.PI * (r1 + r2) * Math.hypot(r2 - r1, d2 - d1);
+  }
+  const mTube = Math.PI * (OD - t) * t * L * RHO;
+  const mDish = dishArea * s * RHO;
+  const mass = mTube + mDish;
+  const Ftip = mass * R0 / L;                // kG siły poziomej na wysokości rantu
+  const impact = Math.abs(P.reach - yc);     // odległość strumienia od osi
+  const korekBot = zEdge - innerBottom - 70; // spód korka z nakrętką (ok. 70 mm pod dnem)
+  const bottleTop = P.hd + 35;
+  const tail = korekBot - bottleTop;         // rurka korek → syfon
+  const pipeLen = yc - 30 + 40;              // od wylotu syfonu do ściany + wsunięcie w uszczelkę
+  const circ = Math.PI * OD;
+  return { OD, t, ID, R0, L, Da, s, a, Rk, rk, z0, beta, h1, h2, rh, outer, inner, innerBottom, depth, yc, zEdge, bowlZ,
+    mTube, mDish, mass, Ftip, impact, korekBot, bottleTop, tail, pipeLen, circ, weldLen: Math.PI * ID };
+}
+
+// ─────────────────────────────────────────────────────────────
+// Scena
+// ─────────────────────────────────────────────────────────────
+const app = document.getElementById('app');
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.localClippingEnabled = true;
+app.appendChild(renderer.domElement);
+const labelRenderer = new CSS2DRenderer({ element: document.getElementById('labels') });
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0xeef0f2);
+scene.environment = new THREE.PMREMGenerator(renderer).fromScene(new RoomEnvironment(), 0.04).texture;
+const camera = new THREE.PerspectiveCamera(40, 1, 5, 30000);
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+
+scene.add(new THREE.HemisphereLight(0xffffff, 0xb9b3a8, 0.9));
+const sun = new THREE.DirectionalLight(0xffffff, 1.6);
+sun.position.copy(V(900, 1600, 2400));
+sun.target.position.copy(V(0, 250, 400));
+sun.castShadow = true;
+sun.shadow.mapSize.set(2048, 2048);
+Object.assign(sun.shadow.camera, { left: -1200, right: 1200, top: 1200, bottom: -1200, near: 10, far: 6000 });
+sun.shadow.bias = -0.0004;
+scene.add(sun, sun.target);
+
+// posadzka w szachownicę jak na wizualizacjach (płytki 200 × 200)
+const cv = document.createElement('canvas'); cv.width = cv.height = 128;
+const cx = cv.getContext('2d');
+for (let i = 0; i < 2; i++) for (let j = 0; j < 2; j++) { cx.fillStyle = (i + j) % 2 ? '#b8683a' : '#ece8e1'; cx.fillRect(i * 64, j * 64, 64, 64); }
+const floorTex = new THREE.CanvasTexture(cv);
+floorTex.wrapS = floorTex.wrapT = THREE.RepeatWrapping; floorTex.repeat.set(1600 / 400, 1400 / 400);
+floorTex.colorSpace = THREE.SRGBColorSpace;
+
+const clipPlane = new THREE.Plane(new THREE.Vector3(-1, 0, 0), 1e5);
+const mat = (color, o = {}) => new THREE.MeshStandardMaterial({ color, roughness: 0.8, metalness: 0, clippingPlanes: [clipPlane], side: THREE.DoubleSide, ...o });
+const M = {
+  inox:    mat(0xe3e7eb, { metalness: 0.8, roughness: 0.38, envMapIntensity: 1.4 }),
+  dish:    mat(0xe9ecef, { metalness: 0.8, roughness: 0.3, envMapIntensity: 1.4 }),
+  weld:    mat(0xe8590c, { metalness: 0.4, roughness: 0.5 }),
+  chrome:  mat(0xe9ecef, { metalness: 1, roughness: 0.12 }),
+  plastic: mat(0xf1f3f5, { roughness: 0.5 }),
+  pipe:    mat(0x9aa3ad, { roughness: 0.6 }),
+  ply:     mat(0xd8c48c, { roughness: 0.85 }),
+  screw:   mat(0x495057, { metalness: 0.8, roughness: 0.4 }),
+  water:   mat(0x74c0fc, { transparent: true, opacity: 0.55, depthWrite: false, roughness: 0.1 }),
+  wall:    mat(0xe6efef, { roughness: 0.6 }),
+  wallPipe: mat(0x868e96, { roughness: 0.7 }),
+  floor:   new THREE.MeshStandardMaterial({ map: floorTex, roughness: 0.7, clippingPlanes: [clipPlane] }),
+  hole:    mat(0x212529, { roughness: 1 }),
+};
+const EDGE = new THREE.LineBasicMaterial({ color: 0x1d2126, transparent: true, opacity: 0.25, clippingPlanes: [clipPlane] });
+const DIM = new THREE.LineBasicMaterial({ color: 0xd9480f, depthTest: false, transparent: true });
+const GRID = new THREE.LineBasicMaterial({ color: 0xb7c4c4, clippingPlanes: [clipPlane] });
+const SEAM_LINE = new THREE.LineDashedMaterial({ color: 0x1971c2, dashSize: 12, gapSize: 8, clippingPlanes: [clipPlane] });
+
+const LAYERS = [
+  ['tube',   'walec – rura inox', 0xc9ced3, true],
+  ['dish',   'misa – dennica tłoczona', 0xd5d9dd, true],
+  ['weld',   'spoina obwodowa', 0xe8590c, true],
+  ['tacks',  'szczepiny – kolejność', 0xd9480f, false],
+  ['seam',   'szew rury + linie trasowania', 0x1971c2, false],
+  ['drain',  'korek, syfon, rura do ściany', 0xf1f3f5, true],
+  ['stopa',  'stopa centrująca + wkręty', 0xd8c48c, true],
+  ['tap',    'bateria ścienna + strumień', 0xe9ecef, true],
+  ['room',   'ściana z płytkami i posadzka', 0xe6efef, true],
+  ['dims',   'wymiary', 0xd9480f, true],
+  ['parts',  'opisy elementów', 0x1d2126, false],
+];
+const layerState = Object.fromEntries(LAYERS.map(l => [l[0], l[3]]));
+let root = null, groups = {};
+const grp = name => groups[name] || (groups[name] = Object.assign(new THREE.Group(), { name }), root.add(groups[name]), groups[name]);
+
+function addMesh(g, geo, material, edges = false) {
+  const m = new THREE.Mesh(geo, material);
+  m.castShadow = !material.transparent; m.receiveShadow = true;
+  g.add(m);
+  if (edges) g.add(new THREE.LineSegments(new THREE.EdgesGeometry(geo, 30), EDGE));
+  return m;
+}
+// bryła obrotowa wokół pionowej osi w punkcie (x, y): profil [[ρ, z], ...]
+function lathe(g, prof, x, y, material, seg = 128) {
+  const geo = new THREE.LatheGeometry(prof.map(([r, z]) => new THREE.Vector2(Math.max(r, 0.001), z)), seg);
+  geo.translate(x, 0, y);
+  return addMesh(g, geo, material);
+}
+const ring = (r0, r1, z0, z1) => [[r0, z0], [r1, z0], [r1, z1], [r0, z1], [r0, z0]];
+function cyl(g, r, a, b, material, seg = 32) {   // walec między punktami a i b (V)
+  const dir = b.clone().sub(a), len = dir.length();
+  const geo = new THREE.CylinderGeometry(r, r, len, seg);
+  const m = addMesh(g, geo, material);
+  m.position.copy(a).add(b).multiplyScalar(0.5);
+  m.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir.normalize());
+  return m;
+}
+function boxM(g, x0, x1, y0, y1, z0, z1, material, edges) {
+  const geo = new THREE.BoxGeometry(x1 - x0, z1 - z0, y1 - y0);
+  geo.translate((x0 + x1) / 2, (z0 + z1) / 2, (y0 + y1) / 2);
+  return addMesh(g, geo, material, edges);
+}
+function label(g, pos, text, cls = 'part') {
+  const el = document.createElement('div'); el.className = cls; el.textContent = text;
+  const o = new CSS2DObject(el); o.position.copy(pos); g.add(o); return o;
+}
+function line(g, pts, material) {
+  const l = new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), material);
+  if (material.isLineDashedMaterial) l.computeLineDistances();
+  l.renderOrder = 10; g.add(l); return l;
+}
+function dim(a, b, text, tick = [0, 0, 15], off = [0, 0, 0]) {
+  const g = grp('dims'), pa = V(...a), pb = V(...b), t = V(...tick);
+  line(g, [pa, pb], DIM);
+  for (const p of [pa, pb]) line(g, [p.clone().sub(t), p.clone().add(t)], DIM);
+  label(g, pa.clone().add(pb).multiplyScalar(0.5).add(V(...off)), text, 'dim');
+}
+const onTube = (G, deg, r = G.R0) => [r * Math.sin(rad(deg)), G.yc + r * Math.cos(rad(deg))];
+
+// ─────────────────────────────────────────────────────────────
+// Budowa modelu
+// ─────────────────────────────────────────────────────────────
+let G;
+function build() {
+  if (root) {
+    root.traverse(o => { if (o.isCSS2DObject) o.element.remove(); if (o.geometry) o.geometry.dispose(); });
+    scene.remove(root);
+  }
+  root = new THREE.Group(); groups = {}; scene.add(root);
+  G = geom();
+  const { R0, ID, L, yc, zEdge, a, s } = G;
+
+  // ── pomieszczenie
+  const room = grp('room');
+  boxM(room, -800, 800, -120, 0, 0, 1500, M.wall);
+  const wl = [];
+  for (let x = -800; x <= 800; x += 100) wl.push(V(x, 0.5, 0), V(x, 0.5, 1500));
+  for (let z = 0; z <= 1500; z += 100) wl.push(V(-800, 0.5, z), V(800, 0.5, z));
+  room.add(new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(wl), GRID));
+  const fl = new THREE.Mesh(new THREE.PlaneGeometry(1600, 1400), M.floor);
+  fl.rotation.x = -Math.PI / 2; fl.position.copy(V(0, 700, 0)); fl.receiveShadow = true; room.add(fl);
+  // odpływ w ścianie (kielich) – widoczny w przekroju
+  cyl(room, P.dn / 2 + 3, V(0, -110, P.hd), V(0, 0, P.hd), M.wallPipe);
+
+  // ── walec
+  const tube = grp('tube');
+  lathe(tube, [[ID / 2, 0], [R0, 0], [R0, L - 1], [R0 - 1, L], [ID / 2 + 0.6, L], [ID / 2, L - 0.6], [ID / 2, 0]], 0, yc, M.inox);
+  // otwór Ø 60 z tyłu na rurę odpływową (zaznaczony)
+  const hp = onTube(G, 180, R0 + 0.6);
+  const hole = new THREE.Mesh(new THREE.CircleGeometry(30, 40), M.hole);
+  hole.position.copy(V(hp[0], hp[1], P.hd)); hole.rotation.y = Math.PI; tube.add(hole);
+  label(grp('parts'), V(-R0 - 40, yc, L * 0.55), `rura Ø ${fmt(G.OD, 1)} × ${fmt(G.t, 1)}, L = ${fmt(L)}`);
+
+  // ── misa (dennica odwrócona) – profil zewn. w dół, wewn. z powrotem w górę
+  const dish = grp('dish');
+  const toZ = ([r, d]) => [r, zEdge - d];
+  const prof = [...G.outer.map(toZ), ...G.inner.slice().reverse().map(toZ), toZ(G.outer[0])];
+  lathe(dish, prof, 0, yc, M.dish);
+  label(grp('parts'), V(0, yc - a * 0.5, zEdge - G.innerBottom * 0.6), `dennica Ø ${fmt(G.Da, 1)} × ${fmt(s, 1)} (DIN ${P.type})`);
+
+  // ── spoina obwodowa (od góry, w narożniku dennica ↔ ścianka)
+  const weld = grp('weld');
+  const wg = new THREE.TorusGeometry(ID / 2 - 1.2, 2.4, 8, 160); wg.rotateX(Math.PI / 2); wg.translate(0, zEdge, yc);
+  addMesh(weld, wg, M.weld);
+  label(grp('parts'), V(R0 * 0.7, yc + R0 * 0.7, zEdge + 15), `spoina obwodowa ${fmt(G.weldLen)} mm`);
+
+  // ── szczepiny i kolejność
+  const tacks = grp('tacks');
+  TACKS.forEach((deg, i) => {
+    const [x, y] = onTube(G, deg, ID / 2 - 3);
+    const m = new THREE.Mesh(new THREE.SphereGeometry(5, 12, 8), M.weld); m.position.copy(V(x, y, zEdge)); tacks.add(m);
+    label(tacks, V(x, y, zEdge + 20), String(i + 1), 'tack');
+  });
+
+  // ── szew i linie trasowania
+  const seam = grp('seam');
+  for (const [deg, txt] of [[SEAM, 'szew rury'], [0, '0° przód'], [90, '90°'], [180, '180° tył'], [270, '270°']]) {
+    const [x, y] = onTube(G, deg, R0 + 0.8);
+    line(seam, [V(x, y, 0), V(x, y, L)], SEAM_LINE);
+    label(seam, V(x, y, L + 30), txt, 'part');
+  }
+  const ln = [];
+  for (let i = 0; i <= 96; i++) { const [x, y] = onTube(G, i * 3.75, ID / 2 - 0.8); ln.push(V(x, y, zEdge)); }
+  line(seam, ln, SEAM_LINE);
+
+  // ── odpływ: korek, rurka, syfon butelkowy, rura do ściany
+  const dr = grp('drain');
+  const zb = zEdge - G.innerBottom;                       // dno misy (wewn.)
+  lathe(dr, ring(G.rh - 2, 34, zb, zb + 3), 0, yc, M.chrome);           // kołnierz korka
+  lathe(dr, ring(0.01, 30, zb + 3, zb + 5), 0, yc, M.chrome);           // sitko
+  lathe(dr, ring(G.rh - 6, G.rh - 2, zb - 55, zb + 1), 0, yc, M.chrome); // korpus
+  lathe(dr, ring(G.rh - 2, G.rh + 8, zb - 2 * s - 12, zb - 2 * s), 0, yc, M.chrome); // nakrętka pod dnem
+  const tailTop = zb - 55, bTop = G.bottleTop, bBot = P.hd - 125;
+  if (tailTop > bTop) cyl(dr, 16, V(0, yc, bTop), V(0, yc, tailTop), M.plastic);
+  lathe(dr, [[0.01, bBot], [30, bBot], [32, bBot + 8], [32, bTop - 8], [30, bTop], [0.01, bTop]], 0, yc, M.plastic);
+  cyl(dr, 16, V(0, yc - 25, P.hd), V(0, -45, P.hd), M.plastic);
+  const ros = new THREE.Mesh(new THREE.CylinderGeometry(36, 36, 6, 40), M.chrome);
+  ros.rotation.x = Math.PI / 2; ros.position.copy(V(0, 3, P.hd)); dr.add(ros);
+  label(grp('parts'), V(70, yc - 40, P.hd - 60), 'syfon butelkowy 1¼"');
+  label(grp('parts'), V(0, G.gap / 2, P.hd + 60), `rura Ø 32 → uszczelka ${P.dn}×32`);
+
+  // ── stopa centrująca + wkręty
+  const st = grp('stopa');
+  lathe(st, ring(0.01, ID / 2 - 1, 0, STOPA), 0, yc, M.ply);
+  for (const deg of SCREWS) {
+    const [x1, y1] = onTube(G, deg, R0 + 1.5), [x2, y2] = onTube(G, deg, ID / 2 - 25);
+    cyl(st, 2.2, V(x1, y1, STOPA / 2), V(x2, y2, STOPA / 2), M.screw, 10);
+  }
+  label(grp('parts'), V(0, yc + ID / 2 - 60, STOPA + 25), `stopa Ø ${fmt(ID - 2)} × ${STOPA} – przyklejona do płytek`);
+
+  // ── bateria ścienna i strumień
+  const tap = grp('tap');
+  const za = P.Hw + 25;
+  const rz = new THREE.Mesh(new THREE.CylinderGeometry(32, 32, 8, 40), M.chrome); rz.rotation.x = Math.PI / 2; rz.position.copy(V(0, 4, za)); tap.add(rz);
+  cyl(tap, 11, V(0, 0, za), V(0, P.reach, za), M.chrome);
+  cyl(tap, 9, V(0, P.reach, za + 11), V(0, P.reach, P.Hw), M.chrome);
+  const rz2 = new THREE.Mesh(new THREE.CylinderGeometry(32, 32, 8, 40), M.chrome); rz2.rotation.x = Math.PI / 2; rz2.position.copy(V(0, 4, za + 110)); tap.add(rz2);
+  cyl(tap, 6, V(0, 8, za + 110), V(0, 70, za + 140), M.chrome);
+  const zi = G.bowlZ(G.impact);
+  cyl(tap, 4.5, V(0, P.reach, P.Hw), V(0, P.reach, zi), M.water, 16);
+  label(grp('parts'), V(0, P.reach / 2, za + 50), 'bateria ścienna (istniejąca)');
+
+  // ── wymiary
+  const xl = -R0 - 70;
+  dim([xl, yc, 0], [xl, yc, L], `rant ${fmt(L)}`, [15, 0, 0]);
+  dim([R0 + 110, P.reach, 0], [R0 + 110, P.reach, P.Hw], `wylot ${fmt(P.Hw)}`, [15, 0, 0]);
+  dim([60, P.reach, L], [60, P.reach, P.Hw], `${fmt(P.clr)}`, [15, 0, 0]);
+  dim([0, 0, P.Hw + 90], [0, P.reach, P.Hw + 90], `zasięg ${fmt(P.reach)}`, [0, 0, 15]);
+  dim([-R0, yc + R0 + 40, L + 25], [R0, yc + R0 + 40, L + 25], `Ø ${fmt(G.OD, 1)}`, [0, 0, 15]);
+  dim([-R0 * 0.5, 0, 25], [-R0 * 0.5, G.gap, 25], `${fmt(P.gap)}`, [0, 0, 12]);
+  dim([-12, yc, L], [-12, yc, zb], `misa ${fmt(G.depth)}`, [15, 0, 0]);
+  dim([-ID / 2 + 15, yc, L], [-ID / 2 + 15, yc, zEdge], `${fmt(P.d)}`, [15, 0, 0]);
+  dim([-90, 2, 0], [-90, 2, P.hd], `odpływ ${fmt(P.hd)}`, [15, 0, 0]);
+
+  applyLayers();
+  renderStats();
+  if (!sheetEl.hidden) renderSheet();
+}
+
+// kolejność szczepin i odcinków spoiny (zawsze na przeciwną stronę)
+const TACKS = [0, 180, 90, 270, 45, 225, 135, 315];
+const SEGS = [0, 1, 2].flatMap(k => TACKS.map(b => b + 15 * k));
+
+// CSS2DRenderer patrzy tylko na widoczność samej etykiety, nie rodzica
+function applyLayers() {
+  for (const [k, g] of Object.entries(groups)) {
+    g.visible = !!layerState[k];
+    g.traverse(o => { if (o.isCSS2DObject) o.visible = g.visible; });
+  }
+}
+
+// ─────────────────────────────────────────────────────────────
+// Kontrole
+// ─────────────────────────────────────────────────────────────
+function checks() {
+  const c = [], ok = (b, good, bad) => c.push([b, b ? good : bad]);
+  ok(G.L >= 780 && G.L <= 920, `Rant ${fmt(G.L)} mm – wygodna wysokość umywalki (Steinberg: 835).`,
+    `Rant ${fmt(G.L)} mm – poza zakresem 780–920. Zmień odstęp wylewka → rant albo przemyśl wysokość baterii.`);
+  const rIn = G.ID / 2;
+  ok(G.impact < rIn - 40, `Strumień trafia ${fmt(G.impact)} mm od osi misy (${P.reach < G.yc ? 'bliżej ściany' : 'bliżej przodu'}).`,
+    `Strumień trafia ${fmt(G.impact)} mm od osi – za blisko rantu albo poza misą. Zmień szczelinę od ściany lub długość wylewki.`);
+  if (G.impact < rIn - 40) ok(G.impact > 30, 'Strumień nie trafia prosto w korek (mniej chlapania).', 'Strumień trafia prosto w korek – będzie chlapać. Przesuń walec o 4–8 cm.');
+  ok(G.depth >= 120, `Głębokość misy ${fmt(G.depth)} mm.`, `Misa płytka (${fmt(G.depth)} mm) – zwiększ zagłębienie dennicy lub wybierz DIN 28013, inaczej będzie chlapać.`);
+  ok(P.play <= 1.5 && P.play >= 0.5, `Luz dennicy ${fmt(P.play, 1)} mm na stronę – dobry pod spoinę.`,
+    P.play < 0.5 ? 'Luz < 0,5 mm – dennica może nie wejść (owalność rury, nadlew szwu). Zamów mniejszą.' : 'Luz > 1,5 mm – trudno zamknąć szczelinę elektrodą, łatwo o przepalenie.');
+  ok(G.tail >= 20, `Rurka korek → syfon: ${fmt(G.tail)} mm (do przycięcia).`,
+    `Odpływ w ścianie za wysoko – syfon nie zmieści się pod korkiem (brakuje ${fmt(20 - G.tail)} mm). Syfon płaski / podtynkowy albo przeróbka odpływu.`);
+  if (G.tail > 320) c.push([false, `Rurka korek → syfon bardzo długa (${fmt(G.tail)} mm) – potrzebne przedłużenie 1¼".`]);
+  ok(P.hd - 125 > STOPA + 20, 'Syfon mieści się nad stopą.', 'Syfon zahacza o stopę – odpływ w ścianie za nisko.');
+  c.push([true, `Przewraca go już ok. ${fmt(G.Ftip, 1)} kg siły poziomej na rancie – stopa przyklejona do płytek + 3 wkręty są konieczne.`]);
+  return c;
+}
+
+function renderStats() {
+  const rows = [
+    ['Długość rury = wysokość rantu', `${fmt(G.L)} mm`],
+    ['Dennica do zamówienia', `Ø ${fmt(G.Da, 1)} × ${fmt(G.s, 1)}`],
+    ['Kołnierz + wypukłość dennicy', `${fmt(P.h1)} + ${fmt(G.h2)} mm`],
+    ['Głębokość misy w osi', `${fmt(G.depth)} mm`],
+    ['Oś walca od lica płytek', `${fmt(G.yc, 1)} mm`],
+    ['Spoina obwodowa', `${fmt(G.weldLen)} mm`],
+    ['Masa: rura + dennica', `${fmt(G.mTube, 1)} + ${fmt(G.mDish, 1)} kg`],
+  ];
+  document.getElementById('stats').innerHTML = `<table>${rows.map(r => `<tr><td>${r[0]}</td><td>${r[1]}</td></tr>`).join('')}</table>`;
+  document.getElementById('checks').innerHTML = checks().map(([b, t]) => `<li class="${b ? 'ok' : 'warn'}">${t}</li>`).join('');
+}
+
+// ─────────────────────────────────────────────────────────────
+// Karta wykonawcza
+// ─────────────────────────────────────────────────────────────
+const sheetEl = document.getElementById('sheet');
+const tbl = (head, rows, num = []) => `<div class="tbl-wrap"><table><tr>${head.map(h => `<th>${h}</th>`).join('')}</tr>${rows.map(r => `<tr>${r.map((c, i) => `<td${num.includes(i) ? ' class="num"' : ''}>${c}</td>`).join('')}</tr>`).join('')}</table></div>`;
+const arc = deg => G.circ * deg / 360;
+
+function svgDevelop() {     // rozwinięcie walca – widok od zewnątrz, od przodu w prawo
+  const W = G.circ, H = G.L, k = 820 / W, pad = 40, sx = x => pad + x * k, sy = z => pad + (H - z) * k;
+  const out = [];
+  out.push(`<svg viewBox="0 0 ${820 + 2 * pad} ${H * k + 2 * pad + 30}" xmlns="http://www.w3.org/2000/svg">`);
+  out.push(`<rect x="${sx(0)}" y="${sy(H)}" width="${W * k}" height="${H * k}" fill="#f1f3f5" stroke="#1d2126" stroke-width="1.2"/>`);
+  for (const [deg, txt] of [[0, 'przód 0°'], [90, 'prawo 90°'], [180, 'tył 180°'], [270, 'lewo 270°'], [360, '360°']]) {
+    out.push(`<line x1="${sx(arc(deg))}" y1="${sy(H)}" x2="${sx(arc(deg))}" y2="${sy(0)}" stroke="#868e96" stroke-dasharray="5 4"/>`);
+    out.push(`<text x="${sx(arc(deg))}" y="${sy(H) - 8}" font-size="11" text-anchor="middle">${txt}</text>`);
+    out.push(`<text x="${sx(arc(deg))}" y="${sy(0) + 16}" font-size="10" text-anchor="middle" fill="#69707a">${fmt(arc(deg))}</text>`);
+  }
+  out.push(`<line x1="${sx(arc(SEAM))}" y1="${sy(H)}" x2="${sx(arc(SEAM))}" y2="${sy(0)}" stroke="#1971c2" stroke-width="2"/>`);
+  out.push(`<text x="${sx(arc(SEAM)) - 4}" y="${sy(H * 0.75)}" font-size="11" fill="#1971c2" text-anchor="end">szew rury (${SEAM}°)</text>`);
+  out.push(`<line x1="${sx(0)}" y1="${sy(G.zEdge)}" x2="${sx(W)}" y2="${sy(G.zEdge)}" stroke="#e8590c" stroke-dasharray="8 4" stroke-width="1.5"/>`);
+  out.push(`<text x="${sx(arc(30))}" y="${sy(G.zEdge) - 5}" font-size="11" fill="#e8590c">krawędź dennicy (wewnątrz) – ${fmt(P.d)} pod rantem</text>`);
+  out.push(`<circle cx="${sx(arc(180))}" cy="${sy(P.hd)}" r="${30 * k}" fill="#fff" stroke="#c92a2a" stroke-width="1.5"/>`);
+  out.push(`<text x="${sx(arc(180)) + 30 * k + 6}" y="${sy(P.hd) + 4}" font-size="11" fill="#c92a2a">Ø 60, oś ${fmt(P.hd)} od dołu</text>`);
+  for (const deg of SCREWS) {
+    out.push(`<circle cx="${sx(arc(deg))}" cy="${sy(STOPA / 2)}" r="3" fill="#c92a2a"/>`);
+    out.push(`<text x="${sx(arc(deg)) + 6}" y="${sy(STOPA / 2) - 6}" font-size="10" fill="#c92a2a">Ø 4,5 @ ${fmt(STOPA / 2)}</text>`);
+  }
+  out.push(`<text x="${sx(W) + 6}" y="${sy(H / 2)}" font-size="11" transform="rotate(90 ${sx(W) + 6} ${sy(H / 2)})" text-anchor="middle">L = ${fmt(G.L)}</text>`);
+  out.push(`<text x="${sx(W / 2)}" y="${sy(0) + 34}" font-size="11" text-anchor="middle">obwód zewn. π·D = ${fmt(G.circ)} mm (liczby pod spodem: długość łuku od linii przodu)</text>`);
+  out.push('</svg>');
+  return out.join('');
+}
+
+function svgDish() {        // półprzekrój dennicy (odwróconej, jak w misie)
+  const k = 300 / (G.a + 20), pad = 30, depthMax = G.h1 + G.h2 + 10;
+  const sx = r => pad + (G.a - r) * k, sy = d => pad + 20 + d * k;   // oś po prawej
+  const o = G.outer.map(([r, d]) => `${sx(r)},${sy(d)}`).join(' ');
+  const i = G.inner.map(([r, d]) => `${sx(r)},${sy(d)}`).join(' ');
+  const axis = sx(0);
+  return `<svg viewBox="0 0 ${axis + 190} ${sy(depthMax) + 40}" xmlns="http://www.w3.org/2000/svg">
+    <polyline points="${o}" fill="none" stroke="#1d2126" stroke-width="1.6"/>
+    <polyline points="${i}" fill="none" stroke="#1d2126" stroke-width="1"/>
+    <line x1="${axis}" y1="${pad}" x2="${axis}" y2="${sy(depthMax) + 10}" stroke="#868e96" stroke-dasharray="8 3 2 3"/>
+    <line x1="${sx(G.a) - 12}" y1="${sy(0)}" x2="${axis + 20}" y2="${sy(0)}" stroke="#e8590c" stroke-dasharray="4 3"/>
+    <text x="${sx(G.a)}" y="${sy(0) - 8}" font-size="11" fill="#e8590c">krawędź = linia spoiny</text>
+    <line x1="${sx(G.a) - 6}" y1="${sy(G.h1)}" x2="${sx(G.a) + 40}" y2="${sy(G.h1)}" stroke="#868e96"/>
+    <text x="${sx(G.a) + 44}" y="${sy(G.h1 / 2) + 4}" font-size="11">kołnierz ${fmt(P.h1)}</text>
+    <text x="${sx(G.a * 0.55)}" y="${sy(G.h1 + G.h2 * 0.35)}" font-size="11">R ${fmt(G.Rk)} / r ${fmt(G.rk)}</text>
+    <text x="${axis + 8}" y="${sy(G.h1 + G.h2) + 4}" font-size="11">dno: ${fmt(G.h1 + G.h2)} pod krawędzią</text>
+    <text x="${axis + 8}" y="${sy(G.h1 + G.h2) + 20}" font-size="11" fill="#c92a2a">otwór Ø ${fmt(P.hole)} w osi</text>
+    <text x="${sx(G.a)}" y="${sy(depthMax) + 30}" font-size="11">Ø ${fmt(G.Da, 1)} × ${fmt(G.s, 1)}, DIN ${P.type} – półprzekrój, oś po prawej</text>
+  </svg>`;
+}
+
+function svgWeld() {        // widok z góry: szczepiny i odcinki
+  const c = 160, r = 120, pt = (deg, rr) => [c + rr * Math.sin(rad(deg)), c + rr * Math.cos(rad(deg))];
+  const out = [`<svg viewBox="0 0 320 345" xmlns="http://www.w3.org/2000/svg">`];
+  out.push(`<rect x="20" y="4" width="280" height="10" fill="#dee2e6"/><text x="160" y="28" font-size="11" text-anchor="middle">ŚCIANA</text>`);
+  out.push(`<circle cx="${c}" cy="${c + 10}" r="${r}" fill="none" stroke="#adb5bd" stroke-width="10"/>`);
+  SEGS.forEach((deg, i) => {
+    const [x1, y1] = pt(deg, r), [x2, y2] = pt(deg + 15, r), [lx, ly] = pt(deg + 7.5, r - 22);
+    out.push(`<path d="M${x1},${y1 + 10} A${r},${r} 0 0 0 ${x2},${y2 + 10}" fill="none" stroke="#e8590c" stroke-width="${i < 8 ? 4 : i < 16 ? 3 : 2}"/>`);
+    out.push(`<text x="${lx}" y="${ly + 14}" font-size="9" text-anchor="middle" fill="#e8590c">${i + 1}</text>`);
+  });
+  TACKS.forEach((deg, i) => {
+    const [x, y] = pt(deg, r + 16);
+    out.push(`<circle cx="${x}" cy="${y + 10}" r="8" fill="#1d2126"/><text x="${x}" y="${y + 13.5}" font-size="9" fill="#fff" text-anchor="middle">${String.fromCharCode(65 + i)}</text>`);
+  });
+  out.push(`<text x="160" y="342" font-size="11" text-anchor="middle">PRZÓD (łazienka)</text></svg>`);
+  return out.join('');
+}
+
+function renderSheet() {
+  const g = G, warn = checks().filter(c => !c[0]);
+  document.getElementById('sheetMeta').textContent =
+    `Wylot wylewki ${fmt(P.Hw)} mm, rant ${fmt(g.L)} mm, rura Ø ${fmt(g.OD, 1)} × ${fmt(g.t, 1)}, dennica Ø ${fmt(g.Da, 1)} × ${fmt(g.s, 1)} DIN ${P.type}, misa ${fmt(g.depth)} mm. Wymiary w mm. Przed cięciem zmierz rurę i dennicę, które faktycznie kupiłeś.`;
+  const order = tbl(['Element', 'Specyfikacja', 'Ilość', 'Uwagi'], [
+    ['Rura', `Ø ${fmt(g.OD, 1)} × ${fmt(g.t, 1)} AISI 304 (1.4301), spawana`, `<b>${fmt(g.L)} mm</b> (±0,5)`, 'cięcie na pile taśmowej, <b>oba końce prostopadłe</b>; szlif K240 lub trawiona'],
+    ['Dennica', `DIN ${P.type}, AISI 304, Ø <b>${fmt(g.Da, 1)}</b> × ${fmt(g.s, 1)}`, '1 szt.', `kołnierz min. ${fmt(P.h1)} mm; <b>przymierzyć do rury</b> – zmierzona średnica wewn. rury − 2 × ${fmt(P.play, 1)}`],
+    ['Stopa', `sklejka wodoodporna ${STOPA} mm, krążek Ø ${fmt(g.ID - 2)}`, '1 szt.', 'wyciąć po zmierzeniu rury: śr. wewn. − 2 mm'],
+    ['Korek', '1¼" bez przelewu: sitko otwarte lub click-clack z blokadą', '1 szt.', `otwór w dennicy Ø ${fmt(P.hole)} – sprawdź w instrukcji korka`],
+    ['Syfon', '1¼" butelkowy, wylot Ø 32 + rura Ø 32', '1 kpl.', `rura do ściany ok. ${fmt(g.pipeLen)} mm; uszczelka redukcyjna ${P.dn}×32; rozeta Ø 32`],
+    ['Wkręty', 'inox A2, łeb płaski/stożkowy, 4 × 30', '3 szt.', 'przez ściankę walca w krawędź stopy'],
+    ['Klej', 'MS polimer + silikon sanitarny', '1 + 1', 'stopa do płytek; spoina walec ↔ posadzka'],
+  ]);
+  const trace = tbl(['Co', 'Gdzie', 'Jak'], [
+    ['Szew rury', `${SEAM}° – ${fmt(arc(SEAM))} mm łuku od linii przodu`, 'wybierz linię przodu tak, żeby szew wypadł z tyłu, obok otworu odpływu'],
+    ['Linia dennicy', `${fmt(P.d)} mm pod rantem, <b>wewnątrz</b>`, 'rysik/flamaster, w kilku punktach od rantu miarką, potem połączyć taśmą malarską'],
+    ['Otwór odpływu', `180° (${fmt(arc(180))} mm łuku), oś ${fmt(P.hd)} mm od dołu`, 'otwornica HSS-Co Ø 60, wolno, z olejem; po szlifie całości, przed trawieniem'],
+    ['Wkręty', `${SCREWS.map(d => `${d}°`).join(', ')}, ${fmt(STOPA / 2)} mm od dołu`, 'wiertło Ø 4,5 – wiercić po nasunięciu na stopę, razem z nią'],
+    ['Szczepiny', `8 × co 45° na linii dennicy, kolejność A–H z rysunku`, 'po jednym krótkim punkcie'],
+  ]);
+  const drain = tbl(['Wymiar', 'Wartość'], [
+    ['Oś odpływu w ścianie', `${fmt(P.hd)} mm`],
+    ['Dno misy (w osi) nad posadzką', `${fmt(g.zEdge - g.innerBottom)} mm`],
+    ['Spód korka (z nakrętką) – orientacyjnie', `${fmt(g.korekBot)} mm`],
+    ['Wierzch syfonu butelkowego – orientacyjnie', `${fmt(g.bottleTop)} mm`],
+    ['Rurka korek → syfon (przyciąć na miejscu)', `${fmt(g.tail)} mm`],
+    ['Rura Ø 32 syfon → ściana (z wsunięciem 40 mm)', `${fmt(g.pipeLen)} mm`],
+    ['Oś walca od lica płytek', `${fmt(g.yc, 1)} mm`],
+  ], [1]);
+  const buy = tbl(['Pozycja', 'Ilość', 'Szac. koszt'], [
+    ['Rura Ø ' + fmt(g.OD, 1) + ' × ' + fmt(g.t, 1) + ' 304, cięta', `${fmt(g.L)} mm`, '600–1500 zł'],
+    ['Dennica Ø ' + fmt(g.Da, 1) + ' × ' + fmt(g.s, 1), '1', '200–500 zł'],
+    ['Korek 1¼" bez przelewu', '1', '50–200 zł'],
+    ['Syfon butelkowy + rura Ø 32 + rozeta + uszczelka', '1 kpl.', '60–200 zł'],
+    ['Sklejka wodoodporna 18 mm (krążek), wkręty A2, MS polimer, silikon', '–', '80–200 zł'],
+    ['Tarcze INOX: cięcie 1 mm, listkowe 80/120, włóknina; szczotka nierdzewna', '–', '120–200 zł'],
+    ['Otwornice HSS-Co Ø ' + fmt(P.hole) + ' i Ø 60', '2', '60–150 zł'],
+    ['Pasta trawiąca lub żel pasywujący', '1', '60–120 zł'],
+    ['Do TIG (jeśli spawarka ma Lift TIG): palnik z zaworem, reduktor, argon, WL20 Ø 1,6, pręt ER308LSi Ø 1,6', '–', '400–900 zł'],
+    ['Do MMA: elektrody E308L-16 Ø 2,0 (przy 3 mm Ø 2,5)', '1 op.', '50–100 zł'],
+  ]);
+  const steps = [
+    'Zmierz: wylot wylewki nad posadzką, jej zasięg od płytek, oś wylewki w poziomie, oś i średnicę odpływu w ścianie. Wpisz w model.',
+    `Kup rurę (cięta na ${fmt(g.L)} mm) i dennicę. Zmierz średnicę wewn. rury suwmiarką w 3 kierunkach; dennica ma wejść z luzem 0,5–1,5 mm na stronę.`,
+    'Na odpadach przećwicz spoinę (ustaw prąd), szlif w narożniku i trawienie.',
+    `Wytrasuj walec wg rozwinięcia: linia przodu, szew z tyłu, linia dennicy ${fmt(P.d)} mm pod rantem (wewnątrz).`,
+    `Wywierć w dennicy otwór Ø ${fmt(P.hole)} dokładnie w osi (najniższy punkt).`,
+    'Przyszczep od wewnątrz 3 wsporniki z płaskownika (lub podeprzyj dennicę krążkiem z deski od dołu) na linii dennicy.',
+    'Rura na płaskiej posadzce, dennica wypukłością w dół. Poziomica na krawędzi dennicy. Luz rozłożony równo.',
+    'Szczepiny A–H (na krzyż). Kontrola: dennica równo, rura okrągła (zmierz średnicę w 2 kierunkach przy rancie).',
+    'Spoina obwodowa: odcinki 1–24 w kolejności z rysunku, przerwy na ostygnięcie. Barwa strefy: słomkowa/złota, nie szara.',
+    'Próba szczelności: zaklej otwór, zalej misę, postaw na suchym papierze na kilka godzin.',
+    'Rant: fazka / zaokrąglenie, papier 240–400. Spoina w misie: listek 80 → 120, potem włóknina.',
+    'Szczotkowanie całości włókniną w jednym kierunku (walec pionowo albo obwodowo, misa koncentrycznie).',
+    'Otwór Ø 60 z tyłu (180°) na wysokości odpływu.',
+    'Trawienie spoiny i przebarwień pastą (lub szlif + żel pasywujący), płukanie, 48 h schnięcia. Test wodą na noc.',
+    `Stopa Ø ${fmt(g.ID - 2)}: przyklej MS polimerem do płytek, środek ${fmt(g.yc, 1)} mm od lica płytek, w osi wylewki. Dzień schnięcia.`,
+    'Korek z uszczelką + silikon pod kołnierzem. Syfon, rurka przycięta na wymiar, rura Ø 32 wsunięta w uszczelkę w ścianie (nie klejona).',
+    `Walec na stopę, 3 wkręty przez ściankę w stopę (${SCREWS.join('°, ')}°). Silikon na styku walec ↔ posadzka.`,
+    'Próba wodą: pełna misa, spuszczenie, ręcznik papierowy pod każdym złączem. Zdjęcie folii.',
+  ];
+  document.getElementById('sheetBody').innerHTML = `
+    ${warn.length ? `<div class="warnbox">${warn.map(w => `<p>⚠️ ${w[1]}</p>`).join('')}</div>` : ''}
+    <h2>Zamówienie</h2>${order}
+    <h2>Trasowanie walca – rozwinięcie (widok od zewnątrz)</h2>
+    <p class="meta">Owiń rurę paskiem papieru, zaznacz pełny obwód i przenieś na niego długości łuku z rysunku. Kąty: 0° przód, rosną w prawo (zgodnie z zegarem patrząc z góry).</p>
+    ${svgDevelop()}
+    ${trace}
+    <h2>Dennica i kolejność spawania</h2>
+    <div class="figs"><div>${svgDish()}</div><div>${svgWeld()}</div></div>
+    <p class="meta">A–H: szczepiny (krótkie punkty). 1–24: odcinki spoiny po ok. ${fmt(g.weldLen / 24)} mm, zawsze na przeciwną stronę; grubsza kreska = wcześniej. Spawaj od góry, w narożniku dennica ↔ ścianka.</p>
+    <h2>Odpływ</h2>${drain}
+    <h2>Lista zakupów</h2>${buy}
+    <h2>Kolejność prac</h2><ol class="check">${steps.map(s => `<li>${s}</li>`).join('')}</ol>`;
+}
+document.getElementById('openSheet').addEventListener('click', () => { renderSheet(); sheetEl.hidden = false; });
+document.getElementById('closeSheet').addEventListener('click', () => { sheetEl.hidden = true; });
+document.getElementById('printSheet').addEventListener('click', () => print());
+
+// ─────────────────────────────────────────────────────────────
+// Panel
+// ─────────────────────────────────────────────────────────────
+const layersEl = document.getElementById('layers');
+for (const [k, name, color] of LAYERS) {
+  const l = document.createElement('label'); l.className = 'chk';
+  l.innerHTML = `<input type="checkbox" ${layerState[k] ? 'checked' : ''}><span class="sw" style="background:#${color.toString(16).padStart(6, '0')}"></span>${name}`;
+  l.querySelector('input').addEventListener('change', e => { layerState[k] = e.target.checked; applyLayers(); });
+  layersEl.appendChild(l);
+}
+for (const [elId, list] of Object.entries(PARAMS)) {
+  const host = document.getElementById(elId);
+  for (const [k, name, a, b, step] of list) {
+    const d = document.createElement('div'); d.className = 'row';
+    if (Array.isArray(a)) {
+      d.innerHTML = `<label>${name}<br><select>${a.map(([v, t]) => `<option value="${v}"${String(v) === String(P[k]) ? ' selected' : ''}>${t}</option>`).join('')}</select></label><output></output>`;
+      const sel = d.querySelector('select');
+      sel.addEventListener('change', () => { P[k] = typeof P[k] === 'number' ? +sel.value : sel.value; build(); });
+    } else {
+      const dec = step < 1 ? 1 : 0;
+      d.innerHTML = `<label>${name}<br><input type="range" min="${a}" max="${b}" step="${step}" value="${P[k]}"></label><output>${fmt(P[k], dec)} mm</output>`;
+      const inp = d.querySelector('input'), out = d.querySelector('output');
+      inp.addEventListener('input', () => { P[k] = +inp.value; out.textContent = `${fmt(P[k], dec)} mm`; build(); });
+    }
+    host.appendChild(d);
+  }
+}
+const cut = document.getElementById('cut'), cutOut = document.getElementById('cutOut');
+function setCut(v) {
+  cut.value = v; const off = v >= 300;
+  clipPlane.constant = off ? 1e5 : v;
+  cutOut.textContent = off ? 'wył.' : `X ${v}`;
+}
+cut.addEventListener('input', () => setCut(+cut.value));
+
+// ─────────────────────────────────────────────────────────────
+// Widoki
+// ─────────────────────────────────────────────────────────────
+const VIEWS = {
+  iso:     () => ({ pos: V(1300, 1900, 1500), tgt: V(0, 220, 520), fov: 40, cut: 300 }),
+  front:   () => ({ pos: V(0, 6000, 650), tgt: V(0, 0, 620), fov: 13, cut: 300 }),
+  section: () => ({ pos: V(6000, 300, 650), tgt: V(0, 300, 620), fov: 13, cut: 0 }),
+  top:     () => ({ pos: V(0, 260, 6000), tgt: V(0, 250, 0), fov: 11, cut: 300 }),
+  bowl:    () => ({ pos: V(300, G.yc + 750, G.L + 650), tgt: V(0, G.yc, G.L - 120), fov: 40, cut: 300 }),
+};
+let anim = null;
+function setView(name) {
+  const v = VIEWS[name]();
+  setCut(v.cut);
+  anim = { t0: performance.now(), from: { pos: camera.position.clone(), tgt: controls.target.clone(), fov: camera.fov }, to: v };
+}
+document.querySelectorAll('[data-view]').forEach(b => b.addEventListener('click', () => setView(b.dataset.view)));
+
+function resize() {
+  const w = app.clientWidth, h = app.clientHeight;
+  renderer.setSize(w, h); labelRenderer.setSize(w, h);
+  camera.aspect = w / h; camera.updateProjectionMatrix();
+}
+addEventListener('resize', resize);
+
+function tick(now) {
+  if (anim) {
+    const k = Math.min(1, (now - anim.t0) / 700), e = k < 0.5 ? 2 * k * k : 1 - (-2 * k + 2) ** 2 / 2;
+    camera.position.lerpVectors(anim.from.pos, anim.to.pos, e);
+    controls.target.lerpVectors(anim.from.tgt, anim.to.tgt, e);
+    camera.fov = anim.from.fov + (anim.to.fov - anim.from.fov) * e; camera.updateProjectionMatrix();
+    if (k === 1) anim = null;
+  }
+  controls.update();
+  renderer.render(scene, camera);
+  labelRenderer.render(scene, camera);
+  requestAnimationFrame(tick);
+}
+
+build();
+// adres #section / #top / #bowl / #front otwiera widok, #karta – kartę wykonawczą
+const h0 = location.hash.slice(1), v0 = (VIEWS[h0] || VIEWS.iso)();
+camera.position.copy(v0.pos); controls.target.copy(v0.tgt); camera.fov = v0.fov; setCut(v0.cut);
+if (h0 === 'karta') { renderSheet(); sheetEl.hidden = false; }
+resize();
+requestAnimationFrame(tick);
+</script>
+</body>
+</html>
